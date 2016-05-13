@@ -1,0 +1,76 @@
+#?#
+arch-install-scripts
+dosfstools
+
+##Core##
+openssh
+ntp
+sudo
+parted
+
+##Utilities##
+tcpdump
+nmap
+wget
+dnsutils
+dhclient
+dialog
+mg
+
+##Cerebrow##
+postgresql
+nodejs
+#npm Import directly node_modules ?
+
+##DISABLED##
+#nfs-utils Support programs for Network File Systems
+#rsync A file transfer program to keep remote files in sync
+#vim-minimal
+#ntfs-3g NTFS filesystem driver and utilities
+#ethtool Utility for controlling network drivers and hardware
+#grml-zsh-config grml's zsh setup
+#grub GNU GRand Unified Bootloader (2)
+#lftp Sophisticated command line based FTP client
+#gnu-netcat GNU rewrite of netcat, the network piping application
+#hdparm A shell utility for manipulating Linux IDE drive/driver parameters
+#dmraid Device mapper RAID interface
+#mtools A collection of utilities to access MS-DOS disks
+#mc Midnight Commander is a text based filemanager/shell that emulates Norton Commander
+
+##USELESS##
+#b43-fwcutter firmware extractor for the b43 kernel module
+#btrfs-progs Btrfs filesystem utilities
+#nilfs-utils A log-structured file system supporting continuous snapshotting (userspace utils)
+#dnsmasq Lightweight, easy to configure DNS forwarder and DHCP server
+#fsarchiver Safe and flexible file-system backup and deployment tool
+#elinks An advanced and well-established feature-rich text mode web browser.
+#f2fs-tools Tools for Flash-Friendly File System (F2FS)
+#gpm A mouse server for the console and xterm
+#gptfdisk A text-mode partitioning tool that works on GUID Partition Table (GPT) disks
+#ipw2100-fw Intel Centrino Drivers firmware for IPW2100
+#ipw2200-fw Firmware for the Intel PRO/Wireless 2200BG
+#irssi Modular text mode IRC client with Perl scripting
+#linux-atm Drivers and tools to support ATM networking under Linux.
+#openconnect Open client for Cisco AnyConnect VPN
+#partclone Utilities to save and restore used blocks on a partition
+#speedtouch Driver for the ADSL Speed Touch USB modem
+#openvpn An easy-to-use, robust, and highly configurable VPN (Virtual Private Network)
+#partimage Partition Image saves partitions in many formats to an image file.
+#ppp A daemon which implements the Point-to-Point Protocol for dial-up networking
+#pptpclient Client for the proprietary Microsoft Point-to-Point Tunneling Protocol, PPTP.
+#refind-efi Rod Smith's fork of rEFIt UEFI Boot Manager - Built with GNU-EFI libs
+#rfkill Tool for enabling and disabling wireless devices
+#rp-pppoe Roaring Penguin's Point-to-Point Protocol over Ethernet client
+#smartmontools Control and monitor S.M.A.R.T. enabled ATA and SCSI Hard Drives
+#testdisk Checks and undeletes partitions + PhotoRec, signature based recovery tool
+#usb_modeswitch Activating switchable USB devices on Linux.
+#vpnc VPN client for cisco3000 VPN Concentrators
+#clonezilla ncurses partition and disk imaging/cloning program
+#crda Central Regulatory Domain Agent for wireless networks
+#darkhttpd A small and secure static webserver
+#ddrescue Central Regulatory Domain Agent for wireless networks
+#wireless_tools Tools allowing to manipulate the Wireless Extensions
+#wpa_actiond Daemon that connects to wpa_supplicant and handles connect and disconnect events
+#wvdial A dialer program to connect to the Internet
+#xl2tpd an open source implementation of the L2TP maintained by Xelerance Corporation
+#zd1211-firmware Firmware for the in-kernel26 zd1211rw wireless driver
