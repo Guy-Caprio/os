@@ -1,0 +1,63 @@
+#!/bin/bash
+
+##################
+## GLOBAL STYLE ##
+##################
+red="\e[1;31m"
+green="\e[1;32m"
+yellow="\e[1;33m"
+nc="\e[0m"
+
+##############################
+## DEFAULT NETWORK SETTiNGS ##
+##############################
+_settings() {
+
+    # INTERFACE(S)
+    nic1="net0"
+    nic2="net1"
+    nic3="net2"
+    nic4="net3"
+
+    # IP(S) 
+    ip1_1="192.168.0.1"
+    ip1_2="192.168.0.2"
+    ip2_1="172.16.0.1"
+    ip2_2="172.16.0.2"
+
+    # HOSTNAME
+    hostname="cerebrow.domain"
+
+    # RESOLVER(S)
+    resolver_1="208.67.222.222"
+    resolver_2="208.67.222.220"
+
+    # DEFAULT GATEWAY
+    defaultgw="192.168.0.254"
+
+    # ROUTES
+    static_route1="10.0.0.0/24 192.168.0.253"
+}
+
+######################
+## SERVICES CONTROL ##
+######################
+#_services() {
+    #SSH
+    #NTP
+    #HTTP
+    #PGSQL
+    #NODE
+#}
+
+####################
+## DIALOG SCRIPTS ##
+####################
+_dialog_init() {
+    dialog --title 'Welcome' --msgbox 'Hello, world!' 5 20
+}
+
+##############################
+## RUN CONFIGURATION SCRIPT ##
+##############################
+_dialog_init

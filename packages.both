@@ -1,8 +1,9 @@
-#?#
-arch-install-scripts
-#dosfstools
-
 ##Core##
+arch-install-scripts
+dosfstools
+parted
+
+##Usefull##
 openssh
 ntp
 sudo

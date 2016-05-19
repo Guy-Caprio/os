@@ -2,9 +2,10 @@
 
 set -e -u
 
-iso_name=archlinux
-iso_label="ARCH_$(date +%Y%m)"
-iso_version=$(date +%Y.%m.%d)
+iso_name=app
+iso_version="0.0.1"
+iso_build="$(date +%Y%m%d%H%M)"
+iso_label="APP-${iso_version}"
 install_dir=arch
 work_dir=work
 out_dir=out
@@ -102,6 +103,10 @@ make_customize_airootfs() {
 
     setarch ${arch} mkarchiso ${verbose} -w "${work_dir}/${arch}" -C "${work_dir}/pacman.conf" -D "${install_dir}" -r '/root/customize_airootfs.sh' run
     rm ${work_dir}/${arch}/airootfs/root/customize_airootfs.sh
+
+    # Version & Build added in /etc/${iso_name}_version
+    echo "version=${iso_version}" >> "${work_dir}/${arch}/airootfs/etc/${iso_name}_version"
+    echo "build=${iso_build}" >> "${work_dir}/${arch}/airootfs/etc/${iso_name}_version"
 }
 
 # Prepare kernel/initramfs ${install_dir}/boot/
