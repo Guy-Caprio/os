@@ -1,8 +1,9 @@
-#?#
-arch-install-scripts
-#dosfstools
-
 ##Core##
+arch-install-scripts
+dosfstools
+#parted
+
+##Usefull##
 openssh
 ntp
 sudo
@@ -11,7 +12,7 @@ sudo
 tcpdump
 nmap
 wget
-dnsutils
+#dnsutils
 dhclient
 dialog
 mg

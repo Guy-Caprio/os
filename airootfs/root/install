@@ -37,16 +37,18 @@ _firmware() {
 _settings() {
 
     # HOSTNAME
-    HOST_name=app.domain
+    HOST_name=app_name.domain
 
     # ROOT PASSWORD
-    ROOT_passwd=root
+    ROOT_passwd=app_name
 }
 
 #######################
 ## DiSK PARTiTiONiNG ##
 #######################
 _disk_part() {
+    echo -e "\n==> Partitionning disk... "
+
     part_error="$red \n==> Partitionning error! Exiting... $nc"
 
     # MBR or GPT
@@ -120,7 +122,7 @@ _disk_part() {
 _mount_part() {
     echo -e "Mounting partitions & activate swap..."
     mount /dev/$_disk${part_order[3]} /mnt
-    mkdir /mnt/{boot,var,tmp,data}
+    mkdir /mnt/{boot,var,data}
     if [[ "$FIRMWARE" == "UEFI" ]]; then
         mkdir -p /mnt/boot/efi/EFI
         mount -t vfat /dev/$_disk${part_order[1} /boot/efi
@@ -167,7 +169,7 @@ _install_system() {
     rm -r /etc/initcpio
 
     # New .zlogin
-    echo '~/.configure' > /root/.zlogin
+    #echo '~/.configure' > /root/.zlogin
     echo '~/.configure' > /etc/skel/.zlogin
 
     # Basic Configuration
@@ -181,6 +183,12 @@ _install_system() {
     echo "KEYMAP=" > /etc/vconsole.conf
     echo -e "==> Setting timezone... "
     ln -s /usr/share/zoneinfo/UTC /etc/localtime
+
+    # Create simple user
+    echo -e "==> Setting user password... "
+    groupadd admin
+    useradd -g admin -m admin
+    echo "admin:admin" | chpasswd
 
     # initramfs
     echo -e "==> Setting Linux environment... "

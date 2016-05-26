@@ -2,10 +2,10 @@
 
 set -e -u
 
-iso_name=app
+iso_name=app_name
 iso_version="0.0.1"
 iso_build="$(date +%Y%m%d%H%M)"
-iso_label="APP-${iso_version}"
+iso_label="app_name-${iso_version}"
 install_dir=arch
 work_dir=work
 out_dir=out
@@ -60,12 +60,11 @@ make_basefs() {
 
 # Additional packages (airootfs)
 make_packages() {
-    setarch ${arch} mkarchiso ${verbose} -w "${work_dir}/${arch}" -C "${work_dir}/pacman.conf" -D "${install_dir}" -p "$(grep -h -v ^# ${script_path}/packages.{both,${arch}})" install
+    setarch ${arch} mkarchiso ${verbose} -w "${work_dir}/${arch}" -C "${work_dir}/pacman.conf" -D "${install_dir}" -p "$(grep -h -v ^\# ${script_path}/packages)" install
 }
 
 # Needed packages for x86_64 EFI boot
 make_packages_efi() {
-#    setarch ${arch} mkarchiso ${verbose} -w "${work_dir}/${arch}" -C "${work_dir}/pacman.conf" -D "${install_dir}" -p "prebootloader" install
     setarch ${arch} mkarchiso ${verbose} -w "${work_dir}/${arch}" -C "${work_dir}/pacman.conf" -D "${install_dir}" -p "efitools" install
 }
 
@@ -95,14 +94,15 @@ make_setup_mkinitcpio() {
 
 # Customize installation (airootfs)
 make_customize_airootfs() {
+    #Copy Root
     cp -af ${script_path}/airootfs ${work_dir}/${arch}
-
-#    curl -o ${work_dir}/${arch}/airootfs/etc/pacman.d/mirrorlist 'https://www.archlinux.org/mirrorlist/?country=all&protocol=http&use_mirror_status=on'
-
-#    lynx -dump -nolist 'https://wiki.archlinux.org/index.php/Installation_Guide?action=render' >> ${work_dir}/${arch}/airootfs/root/install.txt
 
     setarch ${arch} mkarchiso ${verbose} -w "${work_dir}/${arch}" -C "${work_dir}/pacman.conf" -D "${install_dir}" -r '/root/customize_airootfs.sh' run
     rm ${work_dir}/${arch}/airootfs/root/customize_airootfs.sh
+
+    #Copy Core & Front Repo
+    cp -af ${script_path}/../core ${work_dir}/${arch}/airootfs/srv/http/
+    cp -af ${script_path}/../front ${work_dir}/${arch}/airootfs/srv/http/
 
     # Version & Build added in /etc/${iso_name}_version
     echo "version=${iso_version}" >> "${work_dir}/${arch}/airootfs/etc/${iso_name}_version"
@@ -152,8 +152,6 @@ make_isolinux() {
 # Prepare /EFI
 make_efi() {
     mkdir -p ${work_dir}/iso/EFI/boot
-#    cp ${work_dir}/x86_64/airootfs/usr/lib/prebootloader/PreLoader.efi ${work_dir}/iso/EFI/boot/bootx64.efi
-#    cp ${work_dir}/x86_64/airootfs/usr/lib/prebootloader/HashTool.efi ${work_dir}/iso/EFI/boot/
     cp ${work_dir}/x86_64/airootfs/usr/share/efitools/efi/PreLoader.efi ${work_dir}/iso/EFI/boot/bootx64.efi
     cp ${work_dir}/x86_64/airootfs/usr/share/efitools/efi/HashTool.efi ${work_dir}/iso/EFI/boot/
 
@@ -223,7 +221,6 @@ make_prepare() {
 
 # Build ISO
 make_iso() {
-#    mkarchiso ${verbose} -w "${work_dir}" -D "${install_dir}" -L "${iso_label}" -o "${out_dir}" iso "${iso_name}-${iso_version}-dual.iso"
     mkarchiso ${verbose} -w "${work_dir}" -D "${install_dir}" -L "${iso_label}" -o "${out_dir}" iso "${iso_name}-${iso_version}-x86_64.iso"
 }
 
@@ -259,25 +256,15 @@ mkdir -p ${work_dir}
 
 run_once make_pacman_conf
 
-# Do all stuff for each airootfs
-#for arch in i686 x86_64; do
-for arch in x86_64; do
-    run_once make_basefs
-    run_once make_packages
-done
+run_once make_basefs
+run_once make_packages
 
 run_once make_packages_efi
 
-#for arch in i686 x86_64; do
-for arch in x86_64; do
-    run_once make_setup_mkinitcpio
-    run_once make_customize_airootfs
-done
+run_once make_setup_mkinitcpio
+run_once make_customize_airootfs
 
-#for arch in i686 x86_64; do
-for arch in x86_64; do
-    run_once make_boot
-done
+run_once make_boot
 
 # Do all stuff for "iso"
 run_once make_boot_extra
@@ -286,9 +273,6 @@ run_once make_isolinux
 run_once make_efi
 run_once make_efiboot
 
-#for arch in i686 x86_64; do
-for arch in x86_64; do
-    run_once make_prepare
-done
+run_once make_prepare
 
 run_once make_iso
