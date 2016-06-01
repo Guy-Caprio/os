@@ -54,9 +54,9 @@ CREATE TABLE public.aws_storage_objects(
 	amz_website_redirect_location text,
 	container_id integer NOT NULL,
 	object_level integer NOT NULL,
-	object_position int4range NOT NULL,
+	object_lb integer NOT NULL,
+	object_ub integer NOT NULL,
 	CONSTRAINT aws_storage_object_id PRIMARY KEY (id),
-	CONSTRAINT aws_storage_object_position_unique UNIQUE (object_position),
 	CONSTRAINT aws_storage_object_name_unique UNIQUE (name)
 
 );
@@ -65,9 +65,9 @@ ALTER TABLE public.aws_storage_objects OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size,language,md5hash,metadata,amz_website_redirect_location,container_id,object_level,object_position) VALUES ('Folder1','Folder Parent','STANDARD','folder','0','fr_FR','5sd6f1f654dfsg4f65sd15sdf1g5sfd41','{"some": "bullshit"}','','1','0','[0, 5]');
-INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size,language,md5hash,metadata,amz_website_redirect_location,container_id,object_level,object_position) VALUES ('Folder2','Folder Fils','STANDARD','folder','0','fr_FR','5sd6f1f654dfsg4f65sd15sdf1g5sfd41','{"some": "bullshit"}','','1','1','[1, 4]');
-INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size,language,md5hash,metadata,amz_website_redirect_location,container_id,object_level,object_position) VALUES ('Fichier1','Mon premier fichier','STANDARD','jpg','0','fr_FR','5sd6f1f654dfsg4f65sd15sdf1g5sfd41','{"some": "bullshit"}','','1','2','[2, 3]');
+INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size,language,md5hash,metadata,amz_website_redirect_location,container_id,object_level,object_lb,object_ub) VALUES ('Folder1','Folder Parent','STANDARD','folder','0','fr_FR','5sd6f1f654dfsg4f65sd15sdf1g5sfd41','{"some": "bullshit"}','','1','0','0','5');
+INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size,language,md5hash,metadata,amz_website_redirect_location,container_id,object_level,object_lb,object_ub) VALUES ('Folder2','Folder Fils','STANDARD','folder','0','fr_FR','5sd6f1f654dfsg4f65sd15sdf1g5sfd41','{"some": "bullshit"}','','1','1','1','4');
+INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size,language,md5hash,metadata,amz_website_redirect_location,container_id,object_level,object_lb,object_ub) VALUES ('Fichier1','Mon premier fichier','STANDARD','jpg','0','fr_FR','5sd6f1f654dfsg4f65sd15sdf1g5sfd41','{"some": "bullshit"}','','1','2','2','3');
 -- ddl-end --
 
 -- object: public.users | type: TABLE --
@@ -144,9 +144,9 @@ CREATE TABLE public.azr_storage_objects(
 	lease_duration integer,
 	container_id integer NOT NULL,
 	object_level integer NOT NULL,
-	object_position int4range NOT NULL,
+	object_lb integer NOT NULL,
+	object_ub integer NOT NULL,
 	CONSTRAINT azr_blob_id PRIMARY KEY (id),
-	CONSTRAINT azr_storage_blob_position_unique UNIQUE (object_position),
 	CONSTRAINT azr_storage_object_name_unique UNIQUE (name)
 
 );
@@ -188,24 +188,24 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 INSERT INTO public.azr_storage_accounts (signature,name,description,label,location,georeplication,names,values,secondaryread,type) VALUES ('cldstr2','cldstr2','cldstr2','cldstr2','Europe','0','cldstr2','cldstr2','0','Standard_ZRS');
 -- ddl-end --
 
--- object: public.azr_cloud_accounts | type: TABLE --
--- DROP TABLE IF EXISTS public.azr_cloud_accounts CASCADE;
-CREATE TABLE public.azr_cloud_accounts(
+-- object: public.azr_accounts | type: TABLE --
+-- DROP TABLE IF EXISTS public.azr_accounts CASCADE;
+CREATE TABLE public.azr_accounts(
 	id serial NOT NULL,
 	login text NOT NULL,
 	password text NOT NULL,
 	azr_subscription_id text NOT NULL,
 	azr_storage_account_id integer,
-	user_id integer,
-	CONSTRAINT azr_cloud_account_id PRIMARY KEY (id)
+	group_id integer,
+	CONSTRAINT azr_account_id PRIMARY KEY (id)
 
 );
 -- ddl-end --
-ALTER TABLE public.azr_cloud_accounts OWNER TO root;
+ALTER TABLE public.azr_accounts OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.azr_cloud_accounts (login,password,azr_subscription_id,azr_storage_account_id,user_id) VALUES ('bouren_n@etna-alternance.net','secret42','680fe13a-97f0-4f03-858c-e61f151f100d','1','1');
+INSERT INTO public.azr_accounts (login,password,azr_subscription_id,azr_storage_account_id,group_id) VALUES ('bouren_n@etna-alternance.net','secret42','680fe13a-97f0-4f03-858c-e61f151f100d','1','1');
 -- ddl-end --
 
 -- object: public.aws_storage_acl_type | type: TYPE --
@@ -216,9 +216,9 @@ CREATE TYPE public.aws_storage_acl_type AS
 ALTER TYPE public.aws_storage_acl_type OWNER TO root;
 -- ddl-end --
 
--- object: public.aws_cloud_accounts | type: TABLE --
--- DROP TABLE IF EXISTS public.aws_cloud_accounts CASCADE;
-CREATE TABLE public.aws_cloud_accounts(
+-- object: public.aws_accounts | type: TABLE --
+-- DROP TABLE IF EXISTS public.aws_accounts CASCADE;
+CREATE TABLE public.aws_accounts(
 	id serial NOT NULL,
 	login text NOT NULL,
 	password text NOT NULL,
@@ -227,16 +227,16 @@ CREATE TABLE public.aws_cloud_accounts(
 	aws_secret_access_key_id text NOT NULL,
 	aws_account_id text NOT NULL,
 	aws_canonical_user_id text NOT NULL,
-	user_id integer,
-	CONSTRAINT aws_cloud_account_id PRIMARY KEY (id)
+	group_id integer,
+	CONSTRAINT aws_account_id PRIMARY KEY (id)
 
 );
 -- ddl-end --
-ALTER TABLE public.aws_cloud_accounts OWNER TO root;
+ALTER TABLE public.aws_accounts OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.aws_cloud_accounts (login,password,type,aws_access_key_id,aws_secret_access_key_id,aws_account_id,aws_canonical_user_id,user_id) VALUES ('bouren_n@etna-alternance.net','etna42','root','AKIAIZL4Y6D4JDUPSM5A','RkNkRDBXZ8Midrc6ZnH3N5Iwz+6LIDKx7WEfE9XY','A5472-4984-3702','fa47085858ab564334ea42d468c62785f177627106af3bcfbc13cc2dfbe2e497','1');
+INSERT INTO public.aws_accounts (login,password,type,aws_access_key_id,aws_secret_access_key_id,aws_account_id,aws_canonical_user_id,group_id) VALUES ('bouren_n@etna-alternance.net','etna42','root','AKIAIZL4Y6D4JDUPSM5A','RkNkRDBXZ8Midrc6ZnH3N5Iwz+6LIDKx7WEfE9XY','A5472-4984-3702','fa47085858ab564334ea42d468c62785f177627106af3bcfbc13cc2dfbe2e497','1');
 -- ddl-end --
 
 -- object: public.storage_objects | type: VIEW --
@@ -245,18 +245,14 @@ CREATE VIEW public.storage_objects
 AS 
 
 SELECT
-aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_position, 'aws' AS cloud_vendor
+aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_lb, aws_storage_objects.object_ub, 'aws' AS cloud_vendor
 FROM
 public.aws_storage_objects
-WHERE
-type != 'folder'
 UNION ALL
 SELECT
-azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, NULL AS storage_class, azr_storage_objects.azr_blob_type, azr_storage_objects.type, azr_storage_objects.size, azr_storage_objects.language, azr_storage_objects.md5hash, azr_storage_objects.metadata, NULL AS amz_website_redirect_location, azr_storage_objects.content_disposition, azr_storage_objects.lease_id, azr_storage_objects.lease_duration, azr_storage_objects.container_id, azr_storage_objects.object_level, azr_storage_objects.object_position, 'azr' AS cloud_vendor
+azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, NULL AS storage_class, azr_storage_objects.azr_blob_type, azr_storage_objects.type, azr_storage_objects.size, azr_storage_objects.language, azr_storage_objects.md5hash, azr_storage_objects.metadata, NULL AS amz_website_redirect_location, azr_storage_objects.content_disposition, azr_storage_objects.lease_id, azr_storage_objects.lease_duration, azr_storage_objects.container_id, azr_storage_objects.object_level, azr_storage_objects.object_lb, azr_storage_objects.object_ub, 'azr' AS cloud_vendor
 FROM
-public.azr_storage_objects
-WHERE
-type != 'folder';
+public.azr_storage_objects;
 -- ddl-end --
 ALTER VIEW public.storage_objects OWNER TO root;
 -- ddl-end --
@@ -337,48 +333,48 @@ ALTER TABLE public.link_groups_permissions OWNER TO root;
 INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('1','1');
 -- ddl-end --
 
--- object: public.cloud_accounts | type: VIEW --
--- DROP VIEW IF EXISTS public.cloud_accounts CASCADE;
-CREATE VIEW public.cloud_accounts
+-- object: public.accounts | type: VIEW --
+-- DROP VIEW IF EXISTS public.accounts CASCADE;
+CREATE VIEW public.accounts
 AS 
 
 SELECT
-aws_cloud_accounts.id, aws_cloud_accounts.login, aws_cloud_accounts.password, aws_cloud_accounts.type, aws_cloud_accounts.aws_access_key_id, aws_cloud_accounts.aws_secret_access_key_id, aws_cloud_accounts.aws_account_id AS account_id, aws_cloud_accounts.aws_canonical_user_id,  NULL AS azr_storage_account_id, aws_cloud_accounts.user_id,'aws' AS cloud_vendor
+aws_accounts.id, aws_accounts.login, aws_accounts.password, aws_accounts.type, aws_accounts.aws_access_key_id, aws_accounts.aws_secret_access_key_id, aws_accounts.aws_account_id AS account_id, aws_accounts.aws_canonical_user_id,  NULL AS azr_storage_account_id, aws_accounts.group_id,'aws' AS cloud_vendor
 FROM
-public.aws_cloud_accounts
+public.aws_accounts
 UNION ALL
 SELECT
-azr_cloud_accounts.id, azr_cloud_accounts.login, azr_cloud_accounts.password, NULL AS type, NULL AS aws_access_key_id, NULL AS aws_secret_access_key_id, azr_cloud_accounts.azr_subscription_id AS account_id, NULL AS aws_canonical_user_id, azr_cloud_accounts.azr_storage_account_id, azr_cloud_accounts.user_id, 'azr' AS cloud_vendor
+azr_accounts.id, azr_accounts.login, azr_accounts.password, NULL AS type, NULL AS aws_access_key_id, NULL AS aws_secret_access_key_id, azr_accounts.azr_subscription_id AS account_id, NULL AS aws_canonical_user_id, azr_accounts.azr_storage_account_id, azr_accounts.group_id, 'azr' AS cloud_vendor
 FROM 
-public.azr_cloud_accounts;
+public.azr_accounts;
 -- ddl-end --
-ALTER VIEW public.cloud_accounts OWNER TO root;
+ALTER VIEW public.accounts OWNER TO root;
 -- ddl-end --
 
--- object: public.aws_storage | type: TABLE --
--- DROP TABLE IF EXISTS public.aws_storage CASCADE;
-CREATE TABLE public.aws_storage(
+-- object: public.aws_storages | type: TABLE --
+-- DROP TABLE IF EXISTS public.aws_storages CASCADE;
+CREATE TABLE public.aws_storages(
 	id serial NOT NULL,
 	name text NOT NULL,
 	description text,
-	aws_cloud_account_id integer NOT NULL,
+	aws_account_id integer NOT NULL,
 	CONSTRAINT aws_storage_id PRIMARY KEY (id),
 	CONSTRAINT aws_storage_name_unique UNIQUE (name)
 
 );
 -- ddl-end --
-ALTER TABLE public.aws_storage OWNER TO root;
+ALTER TABLE public.aws_storages OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.aws_storage (name,description,aws_cloud_account_id) VALUES ('storageOne','Depuis mon compte AWS','1');
-INSERT INTO public.aws_storage (id,name,description,aws_cloud_account_id) VALUES ('12','storageTwelve','Depuis mon compte AWS','1');
-INSERT INTO public.aws_storage (id,name,description,aws_cloud_account_id) VALUES ('13','storageThirteen','Depuis mon compte AWS','1');
+INSERT INTO public.aws_storages (name,description,aws_account_id) VALUES ('storageOne','Depuis mon compte AWS','1');
+INSERT INTO public.aws_storages (id,name,description,aws_account_id) VALUES ('12','storageTwelve','Depuis mon compte AWS','1');
+INSERT INTO public.aws_storages (id,name,description,aws_account_id) VALUES ('13','storageThirteen','Depuis mon compte AWS','1');
 -- ddl-end --
 
--- object: public.azr_storage | type: TABLE --
--- DROP TABLE IF EXISTS public.azr_storage CASCADE;
-CREATE TABLE public.azr_storage(
+-- object: public.azr_storages | type: TABLE --
+-- DROP TABLE IF EXISTS public.azr_storages CASCADE;
+CREATE TABLE public.azr_storages(
 	id serial NOT NULL,
 	name text NOT NULL,
 	description text,
@@ -388,29 +384,29 @@ CREATE TABLE public.azr_storage(
 
 );
 -- ddl-end --
-ALTER TABLE public.azr_storage OWNER TO root;
+ALTER TABLE public.azr_storages OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.azr_storage (name,description,azr_storage_account_id) VALUES ('storageTwo','Mon Second Stockage -> Azure','1');
+INSERT INTO public.azr_storages (name,description,azr_storage_account_id) VALUES ('storageTwo','Mon Second Stockage -> Azure','1');
 -- ddl-end --
 
--- object: public.storage | type: VIEW --
--- DROP VIEW IF EXISTS public.storage CASCADE;
-CREATE VIEW public.storage
+-- object: public.storages | type: VIEW --
+-- DROP VIEW IF EXISTS public.storages CASCADE;
+CREATE VIEW public.storages
 AS 
 
 SELECT
-aws_storage.id, aws_storage.name, aws_storage.description, aws_storage.aws_cloud_account_id, NULL AS azr_storage_account_id, 'aws' AS cloud_vendor
+aws_storages.id, aws_storages.name, aws_storages.description, aws_storages.aws_account_id AS owner_account_id, 'aws' AS cloud_vendor
 FROM
-public.aws_storage
+public.aws_storages
 UNION ALL
 SELECT
-azr_storage.id, azr_storage.name, azr_storage.description, NULL AS aws_cloud_account_id, azr_storage.azr_storage_account_id, 'azr' AS cloud_vendor
+azr_storages.id, azr_storages.name, azr_storages.description, azr_storages.azr_storage_account_id AS owner_account_id, 'azr' AS cloud_vendor
 FROM 
-public.azr_storage;
+public.azr_storages;
 -- ddl-end --
-ALTER VIEW public.storage OWNER TO root;
+ALTER VIEW public.storages OWNER TO root;
 -- ddl-end --
 
 -- object: public.resources | type: TABLE --
@@ -432,28 +428,28 @@ INSERT INTO public.resources (item_id,item_type) VALUES ('12','aws_storage');
 INSERT INTO public.resources (item_id,item_type) VALUES ('13','aws_storage');
 -- ddl-end --
 
--- object: public.storage_folders | type: VIEW --
--- DROP VIEW IF EXISTS public.storage_folders CASCADE;
-CREATE VIEW public.storage_folders
-AS 
-
-SELECT
-aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_position, 'aws' AS cloud_vendor
-FROM
-public.aws_storage_objects
-WHERE
-type = 'folder'
-UNION ALL
-SELECT
-azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, NULL AS storage_class, azr_storage_objects.azr_blob_type, azr_storage_objects.type, azr_storage_objects.size, azr_storage_objects.language, azr_storage_objects.md5hash, azr_storage_objects.metadata, NULL AS amz_website_redirect_location, azr_storage_objects.content_disposition, azr_storage_objects.lease_id, azr_storage_objects.lease_duration, azr_storage_objects.container_id, azr_storage_objects.object_level, azr_storage_objects.object_position, 'azr' AS cloud_vendor
-FROM
-public.azr_storage_objects
-WHERE
-type = 'folder';
--- ddl-end --
-ALTER VIEW public.storage_folders OWNER TO root;
--- ddl-end --
-
+-- -- object: public.storage_folders | type: VIEW --
+-- -- DROP VIEW IF EXISTS public.storage_folders CASCADE;
+-- CREATE VIEW public.storage_folders
+-- AS 
+-- 
+-- SELECT
+-- aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_position, 'aws' AS cloud_vendor
+-- FROM
+-- public.aws_storage_objects
+-- WHERE
+-- type = 'folder'
+-- UNION ALL
+-- SELECT
+-- azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, NULL AS storage_class, azr_storage_objects.azr_blob_type, azr_storage_objects.type, azr_storage_objects.size, azr_storage_objects.language, azr_storage_objects.md5hash, azr_storage_objects.metadata, NULL AS amz_website_redirect_location, azr_storage_objects.content_disposition, azr_storage_objects.lease_id, azr_storage_objects.lease_duration, azr_storage_objects.container_id, azr_storage_objects.object_level, azr_storage_objects.object_position, 'azr' AS cloud_vendor
+-- FROM
+-- public.azr_storage_objects
+-- WHERE
+-- type = 'folder';
+-- -- ddl-end --
+-- ALTER VIEW public.storage_folders OWNER TO root;
+-- -- ddl-end --
+-- 
 -- object: public.aws_storage_containers | type: TABLE --
 -- DROP TABLE IF EXISTS public.aws_storage_containers CASCADE;
 CREATE TABLE public.aws_storage_containers(
@@ -523,7 +519,8 @@ CREATE TABLE public.cors_configuration(
 	expose_headers text,
 	max_age_seconds integer,
 	item_id integer,
-	CONSTRAINT cors_condiguration_id PRIMARY KEY (id)
+	CONSTRAINT cors_condiguration_id PRIMARY KEY (id),
+	CONSTRAINT unique_item_id UNIQUE (item_id)
 
 );
 -- ddl-end --
@@ -607,6 +604,25 @@ CREATE TRIGGER shift_object_position_on_delete
 	EXECUTE PROCEDURE public.aws_storage_objects_delete();
 -- ddl-end --
 
+-- object: public.register | type: TABLE --
+-- DROP TABLE IF EXISTS public.register CASCADE;
+CREATE TABLE public.register(
+	id serial NOT NULL,
+	key text NOT NULL,
+	value text,
+	CONSTRAINT register_id_key PRIMARY KEY (id,key)
+
+);
+-- ddl-end --
+ALTER TABLE public.register OWNER TO root;
+-- ddl-end --
+
+-- Appended SQL commands --
+INSERT INTO public.register (key,value) VALUES ('configuration_check_list','0');
+INSERT INTO public.register (key,value) VALUES ('aws_iam_api_version','2010-05-08');
+INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01');
+-- ddl-end --
+
 -- object: aws_storage_container_id | type: CONSTRAINT --
 -- ALTER TABLE public.aws_storage_objects DROP CONSTRAINT IF EXISTS aws_storage_container_id CASCADE;
 ALTER TABLE public.aws_storage_objects ADD CONSTRAINT aws_storage_container_id FOREIGN KEY (container_id)
@@ -617,7 +633,7 @@ ON DELETE CASCADE ON UPDATE NO ACTION;
 -- object: azr_storage_id | type: CONSTRAINT --
 -- ALTER TABLE public.azr_storage_containers DROP CONSTRAINT IF EXISTS azr_storage_id CASCADE;
 ALTER TABLE public.azr_storage_containers ADD CONSTRAINT azr_storage_id FOREIGN KEY (storage_id)
-REFERENCES public.azr_storage (id) MATCH FULL
+REFERENCES public.azr_storages (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
@@ -628,25 +644,25 @@ REFERENCES public.azr_storage_containers (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
--- object: user_id | type: CONSTRAINT --
--- ALTER TABLE public.azr_cloud_accounts DROP CONSTRAINT IF EXISTS user_id CASCADE;
-ALTER TABLE public.azr_cloud_accounts ADD CONSTRAINT user_id FOREIGN KEY (user_id)
-REFERENCES public.users (id) MATCH FULL
+-- object: group_id | type: CONSTRAINT --
+-- ALTER TABLE public.azr_accounts DROP CONSTRAINT IF EXISTS group_id CASCADE;
+ALTER TABLE public.azr_accounts ADD CONSTRAINT group_id FOREIGN KEY (group_id)
+REFERENCES public.groups (id) MATCH FULL
 ON DELETE SET NULL ON UPDATE NO ACTION;
 -- ddl-end --
 
 -- object: azr_storage_account_id | type: CONSTRAINT --
--- ALTER TABLE public.azr_cloud_accounts DROP CONSTRAINT IF EXISTS azr_storage_account_id CASCADE;
-ALTER TABLE public.azr_cloud_accounts ADD CONSTRAINT azr_storage_account_id FOREIGN KEY (azr_storage_account_id)
+-- ALTER TABLE public.azr_accounts DROP CONSTRAINT IF EXISTS azr_storage_account_id CASCADE;
+ALTER TABLE public.azr_accounts ADD CONSTRAINT azr_storage_account_id FOREIGN KEY (azr_storage_account_id)
 REFERENCES public.azr_storage_accounts (id) MATCH FULL
 ON DELETE SET NULL ON UPDATE NO ACTION;
 -- ddl-end --
 
--- object: user_id | type: CONSTRAINT --
--- ALTER TABLE public.aws_cloud_accounts DROP CONSTRAINT IF EXISTS user_id CASCADE;
-ALTER TABLE public.aws_cloud_accounts ADD CONSTRAINT user_id FOREIGN KEY (user_id)
-REFERENCES public.users (id) MATCH FULL
-ON DELETE SET NULL ON UPDATE NO ACTION;
+-- object: group_id | type: CONSTRAINT --
+-- ALTER TABLE public.aws_accounts DROP CONSTRAINT IF EXISTS group_id CASCADE;
+ALTER TABLE public.aws_accounts ADD CONSTRAINT group_id FOREIGN KEY (group_id)
+REFERENCES public.groups (id) MATCH FULL
+ON DELETE SET NULL ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: group_id | type: CONSTRAINT --
@@ -684,44 +700,30 @@ REFERENCES public.permissions (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
--- object: aws_cloud_account_id | type: CONSTRAINT --
--- ALTER TABLE public.aws_storage DROP CONSTRAINT IF EXISTS aws_cloud_account_id CASCADE;
-ALTER TABLE public.aws_storage ADD CONSTRAINT aws_cloud_account_id FOREIGN KEY (aws_cloud_account_id)
-REFERENCES public.aws_cloud_accounts (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
--- ddl-end --
-
--- object: azr_storage_account_id | type: CONSTRAINT --
--- ALTER TABLE public.azr_storage DROP CONSTRAINT IF EXISTS azr_storage_account_id CASCADE;
-ALTER TABLE public.azr_storage ADD CONSTRAINT azr_storage_account_id FOREIGN KEY (azr_storage_account_id)
-REFERENCES public.azr_storage_accounts (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
--- ddl-end --
-
 -- object: aws_storage_id | type: CONSTRAINT --
 -- ALTER TABLE public.resources DROP CONSTRAINT IF EXISTS aws_storage_id CASCADE;
 ALTER TABLE public.resources ADD CONSTRAINT aws_storage_id FOREIGN KEY (item_id)
-REFERENCES public.aws_storage (id) MATCH FULL
+REFERENCES public.aws_storages (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
 -- object: aws_storage_id | type: CONSTRAINT --
 -- ALTER TABLE public.aws_storage_containers DROP CONSTRAINT IF EXISTS aws_storage_id CASCADE;
 ALTER TABLE public.aws_storage_containers ADD CONSTRAINT aws_storage_id FOREIGN KEY (storage_id)
-REFERENCES public.aws_storage (id) MATCH FULL
+REFERENCES public.aws_storages (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
--- object: cors_configuration_bucket_id | type: CONSTRAINT --
--- ALTER TABLE public.cors_configuration DROP CONSTRAINT IF EXISTS cors_configuration_bucket_id CASCADE;
-ALTER TABLE public.cors_configuration ADD CONSTRAINT cors_configuration_bucket_id FOREIGN KEY (item_id)
+-- object: cors_configuration_aws_container_id | type: CONSTRAINT --
+-- ALTER TABLE public.cors_configuration DROP CONSTRAINT IF EXISTS cors_configuration_aws_container_id CASCADE;
+ALTER TABLE public.cors_configuration ADD CONSTRAINT cors_configuration_aws_container_id FOREIGN KEY (item_id)
 REFERENCES public.aws_storage_containers (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
--- object: cors_configuration_blob_container_id | type: CONSTRAINT --
--- ALTER TABLE public.cors_configuration DROP CONSTRAINT IF EXISTS cors_configuration_blob_container_id CASCADE;
-ALTER TABLE public.cors_configuration ADD CONSTRAINT cors_configuration_blob_container_id FOREIGN KEY (item_id)
+-- object: cors_configuration_azr_container_id | type: CONSTRAINT --
+-- ALTER TABLE public.cors_configuration DROP CONSTRAINT IF EXISTS cors_configuration_azr_container_id CASCADE;
+ALTER TABLE public.cors_configuration ADD CONSTRAINT cors_configuration_azr_container_id FOREIGN KEY (item_id)
 REFERENCES public.azr_storage_containers (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --

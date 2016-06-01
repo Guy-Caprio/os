@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.8.2-beta1" author="bouren_n" last-position="0,1" last-zoom="0.8"
+<dbmodel pgmodeler-ver="0.8.2-beta1" author="bouren_n" last-position="0,0" last-zoom="0.8"
 	 default-schema="public" default-owner="root">
 <role name="root"
       superuser="true"
@@ -16,7 +16,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<roles names="postgres" role-type="refer" />
 </role>
 
-<database name="development" encoding="UTF8">
+<database name="testing" encoding="UTF8">
 	<role name="root"/>
 </database>
 
@@ -497,9 +497,9 @@ public.azr_accounts;]]></expression>
 <table name="aws_storages">
 	<schema name="public"/>
 	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.aws_storages (name,description,aws_cloud_account_id) VALUES ('storageOne','Depuis mon compte AWS','1');
-INSERT INTO public.aws_storages (id,name,description,aws_cloud_account_id) VALUES ('12','storageTwelve','Depuis mon compte AWS','1');
-INSERT INTO public.aws_storages (id,name,description,aws_cloud_account_id) VALUES ('13','storageThirteen','Depuis mon compte AWS','1');]]></appended-sql>
+	<appended-sql><![CDATA[INSERT INTO public.aws_storages (name,description,aws_account_id) VALUES ('storageOne','Depuis mon compte AWS','1');
+INSERT INTO public.aws_storages (id,name,description,aws_account_id) VALUES ('12','storageTwelve','Depuis mon compte AWS','1');
+INSERT INTO public.aws_storages (id,name,description,aws_account_id) VALUES ('13','storageThirteen','Depuis mon compte AWS','1');]]></appended-sql>
 	<position x="727.75" y="633.75"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
@@ -510,7 +510,7 @@ INSERT INTO public.aws_storages (id,name,description,aws_cloud_account_id) VALUE
 	<column name="description">
 		<type name="text"/>
 	</column>
-	<column name="aws_cloud_account_id" not-null="true">
+	<column name="aws_account_id" not-null="true">
 		<type name="integer"/>
 	</column>
 	<constraint name="aws_storage_id" type="pk-constr" table="public.aws_storages">
@@ -552,7 +552,7 @@ INSERT INTO public.aws_storages (id,name,description,aws_cloud_account_id) VALUE
 	<position x="1827" y="634.25"/>
 	<reference>
 		<expression><![CDATA[SELECT
-aws_storages.id, aws_storages.name, aws_storages.description, aws_storages.aws_cloud_account_id AS owner_account_id, 'aws' AS cloud_vendor
+aws_storages.id, aws_storages.name, aws_storages.description, aws_storages.aws_account_id AS owner_account_id, 'aws' AS cloud_vendor
 FROM
 public.aws_storages
 UNION ALL
@@ -916,12 +916,6 @@ INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
-<constraint name="azr_storage_account_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.azr_storage_accounts" table="public.azr_storages">
-	<columns names="azr_storage_account_id" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
-
 <constraint name="aws_storage_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storages" table="public.resources">
 	<columns names="item_id" ref-type="src-columns"/>
@@ -1014,7 +1008,11 @@ INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01
 <relationship name="rel_aws_storage_containers_aws_storage" type="relfk"
 	 src-table="public.aws_storage_containers"
 	 dst-table="public.aws_storages"
-	 src-required="false" dst-required="false"/>
+	 src-required="false" dst-required="false">
+	<line>
+		<position x="1023.42" y="662.35"/>
+	</line>
+</relationship>
 
 <relationship name="rel_azr_storage_containers_azr_storage" type="relfk"
 	 src-table="public.azr_storage_containers"
@@ -1022,16 +1020,6 @@ INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01
 	 src-required="false" dst-required="false">
 	<line>
 		<position x="1680.65" y="894.35"/>
-	</line>
-</relationship>
-
-<relationship name="rel_azr_storage_azr_storage_accounts" type="relfk"
-	 src-table="public.azr_storages"
-	 dst-table="public.azr_storage_accounts"
-	 src-required="false" dst-required="false">
-	<line>
-		<position x="1362.75" y="369.1"/>
-	<position x="1230.75" y="369.1"/>
 	</line>
 </relationship>
 
