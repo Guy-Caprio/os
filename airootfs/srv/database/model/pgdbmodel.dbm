@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.8.2-beta1" author="bouren_n" last-position="0,0" last-zoom="0.8"
+<dbmodel pgmodeler-ver="0.8.2-beta1" author="bouren_n" last-position="0,1" last-zoom="0.8"
 	 default-schema="public" default-owner="root">
 <role name="root"
       superuser="true"
@@ -16,7 +16,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<roles names="postgres" role-type="refer" />
 </role>
 
-<database name="testing" encoding="UTF8">
+<database name="development" encoding="UTF8">
 	<role name="root"/>
 </database>
 
@@ -42,10 +42,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="aws_storage_objects">
 	<schema name="public"/>
 	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size,language,md5hash,metadata,amz_website_redirect_location,container_id,object_level,object_position) VALUES ('Folder1','Folder Parent','STANDARD','folder','0','fr_FR','5sd6f1f654dfsg4f65sd15sdf1g5sfd41','{"some": "bullshit"}','','1','0','[0, 5]');
-INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size,language,md5hash,metadata,amz_website_redirect_location,container_id,object_level,object_position) VALUES ('Folder2','Folder Fils','STANDARD','folder','0','fr_FR','5sd6f1f654dfsg4f65sd15sdf1g5sfd41','{"some": "bullshit"}','','1','1','[1, 4]');
-INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size,language,md5hash,metadata,amz_website_redirect_location,container_id,object_level,object_position) VALUES ('Fichier1','Mon premier fichier','STANDARD','jpg','0','fr_FR','5sd6f1f654dfsg4f65sd15sdf1g5sfd41','{"some": "bullshit"}','','1','2','[2, 3]');]]></appended-sql>
-	<position x="34.25" y="866.75"/>
+	<appended-sql><![CDATA[INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size,language,md5hash,metadata,amz_website_redirect_location,container_id,object_level,object_lb,object_ub) VALUES ('Folder1','Folder Parent','STANDARD','folder','0','fr_FR','5sd6f1f654dfsg4f65sd15sdf1g5sfd41','{"some": "bullshit"}','','1','0','0','5');
+INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size,language,md5hash,metadata,amz_website_redirect_location,container_id,object_level,object_lb,object_ub) VALUES ('Folder2','Folder Fils','STANDARD','folder','0','fr_FR','5sd6f1f654dfsg4f65sd15sdf1g5sfd41','{"some": "bullshit"}','','1','1','1','4');
+INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size,language,md5hash,metadata,amz_website_redirect_location,container_id,object_level,object_lb,object_ub) VALUES ('Fichier1','Mon premier fichier','STANDARD','jpg','0','fr_FR','5sd6f1f654dfsg4f65sd15sdf1g5sfd41','{"some": "bullshit"}','','1','2','2','3');]]></appended-sql>
+	<position x="34.25" y="865.5"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
 	</column>
@@ -82,14 +82,14 @@ INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size
 	<column name="object_level" not-null="true">
 		<type name="integer"/>
 	</column>
-	<column name="object_position" not-null="true">
-		<type name="int4range"/>
+	<column name="object_lb" not-null="true">
+		<type name="integer"/>
+	</column>
+	<column name="object_ub" not-null="true">
+		<type name="integer"/>
 	</column>
 	<constraint name="aws_storage_object_id" type="pk-constr" table="public.aws_storage_objects">
 		<columns names="id" ref-type="src-columns"/>
-	</constraint>
-	<constraint name="aws_storage_object_position_unique" type="uq-constr" table="public.aws_storage_objects">
-		<columns names="object_position" ref-type="src-columns"/>
 	</constraint>
 	<constraint name="aws_storage_object_name_unique" type="uq-constr" table="public.aws_storage_objects">
 		<columns names="name" ref-type="src-columns"/>
@@ -228,14 +228,14 @@ INSERT INTO public.users (login,password,description,fname,lname,email) VALUES (
 	<column name="object_level" not-null="true">
 		<type name="integer"/>
 	</column>
-	<column name="object_position" not-null="true">
-		<type name="int4range"/>
+	<column name="object_lb" not-null="true">
+		<type name="integer"/>
+	</column>
+	<column name="object_ub" not-null="true">
+		<type name="integer"/>
 	</column>
 	<constraint name="azr_blob_id" type="pk-constr" table="public.azr_storage_objects">
 		<columns names="id" ref-type="src-columns"/>
-	</constraint>
-	<constraint name="azr_storage_blob_position_unique" type="uq-constr" table="public.azr_storage_objects">
-		<columns names="object_position" ref-type="src-columns"/>
 	</constraint>
 	<constraint name="azr_storage_object_name_unique" type="uq-constr" table="public.azr_storage_objects">
 		<columns names="name" ref-type="src-columns"/>
@@ -292,10 +292,10 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 	</constraint>
 </table>
 
-<table name="azr_cloud_accounts">
+<table name="azr_accounts">
 	<schema name="public"/>
 	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.azr_cloud_accounts (login,password,azr_subscription_id,azr_storage_account_id,user_id) VALUES ('bouren_n@etna-alternance.net','secret42','680fe13a-97f0-4f03-858c-e61f151f100d','1','1');]]></appended-sql>
+	<appended-sql><![CDATA[INSERT INTO public.azr_accounts (login,password,azr_subscription_id,azr_storage_account_id,group_id) VALUES ('bouren_n@etna-alternance.net','secret42','680fe13a-97f0-4f03-858c-e61f151f100d','1','1');]]></appended-sql>
 	<position x="833.5" y="52"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
@@ -312,10 +312,10 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 	<column name="azr_storage_account_id">
 		<type name="integer"/>
 	</column>
-	<column name="user_id">
+	<column name="group_id">
 		<type name="integer"/>
 	</column>
-	<constraint name="azr_cloud_account_id" type="pk-constr" table="public.azr_cloud_accounts">
+	<constraint name="azr_account_id" type="pk-constr" table="public.azr_accounts">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
 </table>
@@ -331,10 +331,10 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 	<enumeration values="private,public-read,public-read-write,authenticated-read,aws-exec-read,bucket-owner-read,bucket-owner-full-control"/>
 </usertype>
 
-<table name="aws_cloud_accounts">
+<table name="aws_accounts">
 	<schema name="public"/>
 	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.aws_cloud_accounts (login,password,type,aws_access_key_id,aws_secret_access_key_id,aws_account_id,aws_canonical_user_id,user_id) VALUES ('bouren_n@etna-alternance.net','etna42','root','AKIAIZL4Y6D4JDUPSM5A','RkNkRDBXZ8Midrc6ZnH3N5Iwz+6LIDKx7WEfE9XY','A5472-4984-3702','fa47085858ab564334ea42d468c62785f177627106af3bcfbc13cc2dfbe2e497','1');]]></appended-sql>
+	<appended-sql><![CDATA[INSERT INTO public.aws_accounts (login,password,type,aws_access_key_id,aws_secret_access_key_id,aws_account_id,aws_canonical_user_id,group_id) VALUES ('bouren_n@etna-alternance.net','etna42','root','AKIAIZL4Y6D4JDUPSM5A','RkNkRDBXZ8Midrc6ZnH3N5Iwz+6LIDKx7WEfE9XY','A5472-4984-3702','fa47085858ab564334ea42d468c62785f177627106af3bcfbc13cc2dfbe2e497','1');]]></appended-sql>
 	<position x="863.25" y="319.75"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
@@ -360,10 +360,10 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 	<column name="aws_canonical_user_id" not-null="true">
 		<type name="text"/>
 	</column>
-	<column name="user_id">
+	<column name="group_id">
 		<type name="integer"/>
 	</column>
-	<constraint name="aws_cloud_account_id" type="pk-constr" table="public.aws_cloud_accounts">
+	<constraint name="aws_account_id" type="pk-constr" table="public.aws_accounts">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
 </table>
@@ -371,21 +371,17 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 <view name="storage_objects">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="1825.25" y="1032.75"/>
+	<position x="1827.75" y="1032.75"/>
 	<reference>
 		<expression><![CDATA[SELECT
-aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_position, 'aws' AS cloud_vendor
+aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_lb, aws_storage_objects.object_ub, 'aws' AS cloud_vendor
 FROM
 public.aws_storage_objects
-WHERE
-type != 'folder'
 UNION ALL
 SELECT
-azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, NULL AS storage_class, azr_storage_objects.azr_blob_type, azr_storage_objects.type, azr_storage_objects.size, azr_storage_objects.language, azr_storage_objects.md5hash, azr_storage_objects.metadata, NULL AS amz_website_redirect_location, azr_storage_objects.content_disposition, azr_storage_objects.lease_id, azr_storage_objects.lease_duration, azr_storage_objects.container_id, azr_storage_objects.object_level, azr_storage_objects.object_position, 'azr' AS cloud_vendor
+azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, NULL AS storage_class, azr_storage_objects.azr_blob_type, azr_storage_objects.type, azr_storage_objects.size, azr_storage_objects.language, azr_storage_objects.md5hash, azr_storage_objects.metadata, NULL AS amz_website_redirect_location, azr_storage_objects.content_disposition, azr_storage_objects.lease_id, azr_storage_objects.lease_duration, azr_storage_objects.container_id, azr_storage_objects.object_level, azr_storage_objects.object_lb, azr_storage_objects.object_ub, 'azr' AS cloud_vendor
 FROM
-public.azr_storage_objects
-WHERE
-type != 'folder']]></expression>
+public.azr_storage_objects]]></expression>
 	</reference>
 </view>
 
@@ -481,29 +477,29 @@ INSERT INTO public.permissions (resource_id,read,write,delete,read_permission,wr
 	</constraint>
 </table>
 
-<view name="cloud_accounts">
+<view name="accounts">
 	<schema name="public"/>
 	<role name="root"/>
 	<position x="1807" y="102.5"/>
 	<reference>
 		<expression><![CDATA[SELECT
-aws_cloud_accounts.id, aws_cloud_accounts.login, aws_cloud_accounts.password, aws_cloud_accounts.type, aws_cloud_accounts.aws_access_key_id, aws_cloud_accounts.aws_secret_access_key_id, aws_cloud_accounts.aws_account_id AS account_id, aws_cloud_accounts.aws_canonical_user_id,  NULL AS azr_storage_account_id, aws_cloud_accounts.user_id,'aws' AS cloud_vendor
+aws_accounts.id, aws_accounts.login, aws_accounts.password, aws_accounts.type, aws_accounts.aws_access_key_id, aws_accounts.aws_secret_access_key_id, aws_accounts.aws_account_id AS account_id, aws_accounts.aws_canonical_user_id,  NULL AS azr_storage_account_id, aws_accounts.group_id,'aws' AS cloud_vendor
 FROM
-public.aws_cloud_accounts
+public.aws_accounts
 UNION ALL
 SELECT
-azr_cloud_accounts.id, azr_cloud_accounts.login, azr_cloud_accounts.password, NULL AS type, NULL AS aws_access_key_id, NULL AS aws_secret_access_key_id, azr_cloud_accounts.azr_subscription_id AS account_id, NULL AS aws_canonical_user_id, azr_cloud_accounts.azr_storage_account_id, azr_cloud_accounts.user_id, 'azr' AS cloud_vendor
+azr_accounts.id, azr_accounts.login, azr_accounts.password, NULL AS type, NULL AS aws_access_key_id, NULL AS aws_secret_access_key_id, azr_accounts.azr_subscription_id AS account_id, NULL AS aws_canonical_user_id, azr_accounts.azr_storage_account_id, azr_accounts.group_id, 'azr' AS cloud_vendor
 FROM 
-public.azr_cloud_accounts;]]></expression>
+public.azr_accounts;]]></expression>
 	</reference>
 </view>
 
-<table name="aws_storage">
+<table name="aws_storages">
 	<schema name="public"/>
 	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.aws_storage (name,description,aws_cloud_account_id) VALUES ('storageOne','Depuis mon compte AWS','1');
-INSERT INTO public.aws_storage (id,name,description,aws_cloud_account_id) VALUES ('12','storageTwelve','Depuis mon compte AWS','1');
-INSERT INTO public.aws_storage (id,name,description,aws_cloud_account_id) VALUES ('13','storageThirteen','Depuis mon compte AWS','1');]]></appended-sql>
+	<appended-sql><![CDATA[INSERT INTO public.aws_storages (name,description,aws_cloud_account_id) VALUES ('storageOne','Depuis mon compte AWS','1');
+INSERT INTO public.aws_storages (id,name,description,aws_cloud_account_id) VALUES ('12','storageTwelve','Depuis mon compte AWS','1');
+INSERT INTO public.aws_storages (id,name,description,aws_cloud_account_id) VALUES ('13','storageThirteen','Depuis mon compte AWS','1');]]></appended-sql>
 	<position x="727.75" y="633.75"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
@@ -517,18 +513,18 @@ INSERT INTO public.aws_storage (id,name,description,aws_cloud_account_id) VALUES
 	<column name="aws_cloud_account_id" not-null="true">
 		<type name="integer"/>
 	</column>
-	<constraint name="aws_storage_id" type="pk-constr" table="public.aws_storage">
+	<constraint name="aws_storage_id" type="pk-constr" table="public.aws_storages">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="aws_storage_name_unique" type="uq-constr" table="public.aws_storage">
+	<constraint name="aws_storage_name_unique" type="uq-constr" table="public.aws_storages">
 		<columns names="name" ref-type="src-columns"/>
 	</constraint>
 </table>
 
-<table name="azr_storage">
+<table name="azr_storages">
 	<schema name="public"/>
 	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.azr_storage (name,description,azr_storage_account_id) VALUES ('storageTwo','Mon Second Stockage -> Azure','1');]]></appended-sql>
+	<appended-sql><![CDATA[INSERT INTO public.azr_storages (name,description,azr_storage_account_id) VALUES ('storageTwo','Mon Second Stockage -> Azure','1');]]></appended-sql>
 	<position x="1382.25" y="598.5"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
@@ -542,28 +538,28 @@ INSERT INTO public.aws_storage (id,name,description,aws_cloud_account_id) VALUES
 	<column name="azr_storage_account_id" not-null="true">
 		<type name="integer"/>
 	</column>
-	<constraint name="azr_storage_id" type="pk-constr" table="public.azr_storage">
+	<constraint name="azr_storage_id" type="pk-constr" table="public.azr_storages">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="azr_storage_name_unique" type="uq-constr" table="public.azr_storage">
+	<constraint name="azr_storage_name_unique" type="uq-constr" table="public.azr_storages">
 		<columns names="name" ref-type="src-columns"/>
 	</constraint>
 </table>
 
-<view name="storage">
+<view name="storages">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="1823.25" y="634.25"/>
+	<position x="1827" y="634.25"/>
 	<reference>
 		<expression><![CDATA[SELECT
-aws_storage.id, aws_storage.name, aws_storage.description, aws_storage.aws_cloud_account_id AS owner_account_id, 'aws' AS cloud_vendor
+aws_storages.id, aws_storages.name, aws_storages.description, aws_storages.aws_cloud_account_id AS owner_account_id, 'aws' AS cloud_vendor
 FROM
-public.aws_storage
+public.aws_storages
 UNION ALL
 SELECT
-azr_storage.id, azr_storage.name, azr_storage.description, azr_storage.azr_storage_account_id AS owner_account_id, 'azr' AS cloud_vendor
+azr_storages.id, azr_storages.name, azr_storages.description, azr_storages.azr_storage_account_id AS owner_account_id, 'azr' AS cloud_vendor
 FROM 
-public.azr_storage;]]></expression>
+public.azr_storages;]]></expression>
 	</reference>
 </view>
 
@@ -588,7 +584,7 @@ INSERT INTO public.resources (item_id,item_type) VALUES ('13','aws_storage');]]>
 	</constraint>
 </table>
 
-<view name="storage_folders">
+<view name="storage_folders" sql-disabled="true">
 	<schema name="public"/>
 	<role name="root"/>
 	<position x="1827" y="920.25"/>
@@ -735,6 +731,9 @@ public.azr_storage_containers;]]></expression>
 	<constraint name="cors_condiguration_id" type="pk-constr" table="public.cors_configuration">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
+	<constraint name="unique_item_id" type="uq-constr" table="public.cors_configuration">
+		<columns names="item_id" ref-type="src-columns"/>
+	</constraint>
 </table>
 
 <table name="aws_permission_configuration">
@@ -825,6 +824,32 @@ END;]]></definition>
 		<function signature="public.aws_storage_objects_delete()"/>
 </trigger>
 
+<table name="register">
+	<schema name="public"/>
+	<role name="root"/>
+	<appended-sql><![CDATA[INSERT INTO public.register (key,value) VALUES ('configuration_check_list','0');
+INSERT INTO public.register (key,value) VALUES ('aws_iam_api_version','2010-05-08');
+INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01');]]></appended-sql>
+	<position x="2281.25" y="101.25"/>
+	<column name="id" not-null="true">
+		<type name="serial"/>
+	</column>
+	<column name="key" not-null="true">
+		<type name="text"/>
+	</column>
+	<column name="value">
+		<type name="text"/>
+	</column>
+	<constraint name="register_id_key" type="pk-constr" table="public.register">
+		<columns names="id,key" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<textbox name="Utils" font-size="9">
+	<position x="2318.75" y="12.5"/>
+	<comment><![CDATA[Utils]]></comment>
+</textbox>
+
 <constraint name="aws_storage_container_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storage_containers" table="public.aws_storage_objects">
 	<columns names="container_id" ref-type="src-columns"/>
@@ -832,7 +857,7 @@ END;]]></definition>
 </constraint>
 
 <constraint name="azr_storage_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.azr_storage" table="public.azr_storage_containers">
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.azr_storages" table="public.azr_storage_containers">
 	<columns names="storage_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
@@ -843,21 +868,21 @@ END;]]></definition>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
-<constraint name="user_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="SET NULL" ref-table="public.users" table="public.azr_cloud_accounts">
-	<columns names="user_id" ref-type="src-columns"/>
+<constraint name="group_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="SET NULL" ref-table="public.groups" table="public.azr_accounts">
+	<columns names="group_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
 <constraint name="azr_storage_account_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="SET NULL" ref-table="public.azr_storage_accounts" table="public.azr_cloud_accounts">
+	 upd-action="NO ACTION" del-action="SET NULL" ref-table="public.azr_storage_accounts" table="public.azr_accounts">
 	<columns names="azr_storage_account_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
-<constraint name="user_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="SET NULL" ref-table="public.users" table="public.aws_cloud_accounts">
-	<columns names="user_id" ref-type="src-columns"/>
+<constraint name="group_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="CASCADE" del-action="SET NULL" ref-table="public.groups" table="public.aws_accounts">
+	<columns names="group_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
@@ -891,37 +916,31 @@ END;]]></definition>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
-<constraint name="aws_cloud_account_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.aws_cloud_accounts" table="public.aws_storage">
-	<columns names="aws_cloud_account_id" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
-
 <constraint name="azr_storage_account_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.azr_storage_accounts" table="public.azr_storage">
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.azr_storage_accounts" table="public.azr_storages">
 	<columns names="azr_storage_account_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
 <constraint name="aws_storage_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storage" table="public.resources">
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storages" table="public.resources">
 	<columns names="item_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
 <constraint name="aws_storage_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storage" table="public.aws_storage_containers">
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storages" table="public.aws_storage_containers">
 	<columns names="storage_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
-<constraint name="cors_configuration_bucket_id" type="fk-constr" comparison-type="MATCH FULL"
+<constraint name="cors_configuration_aws_container_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storage_containers" table="public.cors_configuration">
 	<columns names="item_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
-<constraint name="cors_configuration_blob_container_id" type="fk-constr" comparison-type="MATCH FULL"
+<constraint name="cors_configuration_azr_container_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.azr_storage_containers" table="public.cors_configuration">
 	<columns names="item_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
@@ -939,16 +958,6 @@ END;]]></definition>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
-<relationship name="rel_accounts_users" type="relfk"
-	 src-table="public.azr_cloud_accounts"
-	 dst-table="public.users"
-	 src-required="false" dst-required="false">
-	<line>
-		<position x="752.061" y="150.6"/>
-	<position x="752.061" y="78.1"/>
-	</line>
-</relationship>
-
 <relationship name="rel_azr_storage_objects_azr_storage_containers" type="relfk"
 	 src-table="public.azr_storage_objects"
 	 dst-table="public.azr_storage_containers"
@@ -959,22 +968,12 @@ END;]]></definition>
 </relationship>
 
 <relationship name="rel_cloud_accounts_azr_storage_accounts" type="relfk"
-	 src-table="public.azr_cloud_accounts"
+	 src-table="public.azr_accounts"
 	 dst-table="public.azr_storage_accounts"
 	 src-required="false" dst-required="false">
 	<line>
 		<position x="1171.82" y="136.6"/>
 	<position x="1171.82" y="69.1"/>
-	</line>
-</relationship>
-
-<relationship name="rel_cloud_accounts_cp_users" type="relfk"
-	 src-table="public.aws_cloud_accounts"
-	 dst-table="public.users"
-	 src-required="false" dst-required="false">
-	<line>
-		<position x="843.75" y="267.35"/>
-	<position x="692.622" y="267.35"/>
 	</line>
 </relationship>
 
@@ -1014,12 +1013,12 @@ END;]]></definition>
 
 <relationship name="rel_aws_storage_containers_aws_storage" type="relfk"
 	 src-table="public.aws_storage_containers"
-	 dst-table="public.aws_storage"
+	 dst-table="public.aws_storages"
 	 src-required="false" dst-required="false"/>
 
 <relationship name="rel_azr_storage_containers_azr_storage" type="relfk"
 	 src-table="public.azr_storage_containers"
-	 dst-table="public.azr_storage"
+	 dst-table="public.azr_storages"
 	 src-required="false" dst-required="false">
 	<line>
 		<position x="1680.65" y="894.35"/>
@@ -1027,7 +1026,7 @@ END;]]></definition>
 </relationship>
 
 <relationship name="rel_azr_storage_azr_storage_accounts" type="relfk"
-	 src-table="public.azr_storage"
+	 src-table="public.azr_storages"
 	 dst-table="public.azr_storage_accounts"
 	 src-required="false" dst-required="false">
 	<line>
@@ -1038,7 +1037,7 @@ END;]]></definition>
 
 <relationship name="rel_resources_aws_storage" type="relfk"
 	 src-table="public.resources"
-	 dst-table="public.aws_storage"
+	 dst-table="public.aws_storages"
 	 src-required="false" dst-required="false">
 	<line>
 		<position x="708.25" y="413.6"/>
@@ -1100,13 +1099,23 @@ END;]]></definition>
 	</line>
 </relationship>
 
-<relationship name="rel_aws_storage_aws_cloud_accounts" type="relfk"
-	 src-table="public.aws_storage"
-	 dst-table="public.aws_cloud_accounts"
+<relationship name="rel_aws_cloud_accounts_groups" type="relfk"
+	 src-table="public.aws_accounts"
+	 dst-table="public.groups"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="1017.92" y="526.35"/>
-	<position x="1159.23" y="526.35"/>
+		<position x="768.061" y="460.35"/>
+	<position x="768.061" y="248.35"/>
+	</line>
+</relationship>
+
+<relationship name="rel_azr_cloud_accounts_groups" type="relfk"
+	 src-table="public.azr_accounts"
+	 dst-table="public.groups"
+	 src-required="false" dst-required="false">
+	<line>
+		<position x="814" y="199.475"/>
+	<position x="692.372" y="199.475"/>
 	</line>
 </relationship>
 
