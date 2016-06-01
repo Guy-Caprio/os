@@ -298,6 +298,7 @@ INSERT INTO public.link_groups_users (group_id,user_id) VALUES ('1','1');
 CREATE TABLE public.permissions(
 	id serial NOT NULL,
 	resource_id integer NOT NULL,
+	resource_table text NOT NULL,
 	read boolean NOT NULL,
 	write boolean NOT NULL,
 	delete boolean NOT NULL,
@@ -312,9 +313,9 @@ ALTER TABLE public.permissions OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.permissions (resource_id,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('1','1','1','1','1','1','1');
-INSERT INTO public.permissions (resource_id,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('2','1','1','1','1','1','1');
-INSERT INTO public.permissions (resource_id,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('3','1','1','1','1','1','1');
+INSERT INTO public.permissions (resource_id,resource_table,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('1','aws_storages','1','1','1','0','0','0');
+INSERT INTO public.permissions (resource_id,resource_table,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('12','aws_storages','1','0','1','0','1','0');
+INSERT INTO public.permissions (resource_id,resource_table,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('13','aws_storages','1','1','1','1','1','1');
 -- ddl-end --
 
 -- object: public.link_groups_permissions | type: TABLE --
@@ -331,6 +332,8 @@ ALTER TABLE public.link_groups_permissions OWNER TO root;
 
 -- Appended SQL commands --
 INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('1','1');
+INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('2','2');
+INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('3','3');
 -- ddl-end --
 
 -- object: public.accounts | type: VIEW --
@@ -407,25 +410,6 @@ FROM
 public.azr_storages;
 -- ddl-end --
 ALTER VIEW public.storages OWNER TO root;
--- ddl-end --
-
--- object: public.resources | type: TABLE --
--- DROP TABLE IF EXISTS public.resources CASCADE;
-CREATE TABLE public.resources(
-	id serial NOT NULL,
-	item_id integer NOT NULL,
-	item_type text NOT NULL,
-	CONSTRAINT resource_id PRIMARY KEY (id)
-
-);
--- ddl-end --
-ALTER TABLE public.resources OWNER TO root;
--- ddl-end --
-
--- Appended SQL commands --
-INSERT INTO public.resources (item_id,item_type) VALUES ('1','aws_storage');
-INSERT INTO public.resources (item_id,item_type) VALUES ('12','aws_storage');
-INSERT INTO public.resources (item_id,item_type) VALUES ('13','aws_storage');
 -- ddl-end --
 
 -- -- object: public.storage_folders | type: VIEW --
@@ -623,6 +607,46 @@ INSERT INTO public.register (key,value) VALUES ('aws_iam_api_version','2010-05-0
 INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01');
 -- ddl-end --
 
+-- object: public.resources | type: VIEW --
+-- DROP VIEW IF EXISTS public.resources CASCADE;
+CREATE VIEW public.resources
+AS 
+
+SELECT id, name, 'aws_storages' AS resource_table
+FROM aws_storages
+UNION ALL
+SELECT id, name, 'azr_storages' AS resource_table
+FROM azr_storages
+UNION ALL
+SELECT id, name, 'aws_storage_containers' AS resource_table
+FROM aws_storage_containers
+UNION ALL
+SELECT id, name, 'azr_storage_containers' AS resource_table
+FROM azr_storage_containers
+UNION ALL
+SELECT id, name, 'aws_storage_folders' AS resource_table
+FROM aws_storage_objects
+WHERE
+type = 'folder'
+UNION ALL
+SELECT id, name, 'aws_storage_files' AS resource_table
+FROM aws_storage_objects
+WHERE
+type != 'folder'
+UNION ALL
+SELECT id, name, 'azr_storage_folders' AS resource_table
+FROM azr_storage_objects
+WHERE
+type = 'folder'
+UNION ALL
+SELECT id, name, 'azr_storage_files' AS resource_table
+FROM azr_storage_objects
+WHERE
+type != 'folder';
+-- ddl-end --
+ALTER VIEW public.resources OWNER TO root;
+-- ddl-end --
+
 -- object: aws_storage_container_id | type: CONSTRAINT --
 -- ALTER TABLE public.aws_storage_objects DROP CONSTRAINT IF EXISTS aws_storage_container_id CASCADE;
 ALTER TABLE public.aws_storage_objects ADD CONSTRAINT aws_storage_container_id FOREIGN KEY (container_id)
@@ -679,13 +703,6 @@ REFERENCES public.users (id) MATCH FULL
 ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ddl-end --
 
--- object: resource_id | type: CONSTRAINT --
--- ALTER TABLE public.permissions DROP CONSTRAINT IF EXISTS resource_id CASCADE;
-ALTER TABLE public.permissions ADD CONSTRAINT resource_id FOREIGN KEY (resource_id)
-REFERENCES public.resources (id) MATCH FULL
-ON DELETE CASCADE ON UPDATE NO ACTION;
--- ddl-end --
-
 -- object: group_id | type: CONSTRAINT --
 -- ALTER TABLE public.link_groups_permissions DROP CONSTRAINT IF EXISTS group_id CASCADE;
 ALTER TABLE public.link_groups_permissions ADD CONSTRAINT group_id FOREIGN KEY (group_id)
@@ -697,13 +714,6 @@ ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ALTER TABLE public.link_groups_permissions DROP CONSTRAINT IF EXISTS permission_id CASCADE;
 ALTER TABLE public.link_groups_permissions ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
 REFERENCES public.permissions (id) MATCH FULL
-ON DELETE CASCADE ON UPDATE NO ACTION;
--- ddl-end --
-
--- object: aws_storage_id | type: CONSTRAINT --
--- ALTER TABLE public.resources DROP CONSTRAINT IF EXISTS aws_storage_id CASCADE;
-ALTER TABLE public.resources ADD CONSTRAINT aws_storage_id FOREIGN KEY (item_id)
-REFERENCES public.aws_storages (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 

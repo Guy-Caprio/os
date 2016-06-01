@@ -138,7 +138,7 @@ INSERT INTO public.users (login,password,description,fname,lname,email) VALUES (
 </usertype>
 
 <textbox name="RBAC" font-size="9">
-	<position x="299.5" y="11.75"/>
+	<position x="378.25" y="218"/>
 	<comment><![CDATA[RBAC]]></comment>
 </textbox>
 
@@ -321,7 +321,7 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 </table>
 
 <textbox name="Views" font-size="9">
-	<position x="1871.25" y="13.75"/>
+	<position x="1821.25" y="38.75"/>
 	<comment><![CDATA[Views]]></comment>
 </textbox>
 
@@ -371,7 +371,7 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 <view name="storage_objects">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="1827.75" y="1032.75"/>
+	<position x="1766.5" y="999"/>
 	<reference>
 		<expression><![CDATA[SELECT
 aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_lb, aws_storage_objects.object_ub, 'aws' AS cloud_vendor
@@ -428,15 +428,18 @@ INSERT INTO public.groups (name,description,type) VALUES ('net-admin','Network A
 <table name="permissions">
 	<schema name="public"/>
 	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.permissions (resource_id,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('1','1','1','1','1','1','1');
-INSERT INTO public.permissions (resource_id,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('2','1','1','1','1','1','1');
-INSERT INTO public.permissions (resource_id,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('3','1','1','1','1','1','1');]]></appended-sql>
-	<position x="29.75" y="357.25"/>
+	<appended-sql><![CDATA[INSERT INTO public.permissions (resource_id,resource_table,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('1','aws_storages','1','1','1','0','0','0');
+INSERT INTO public.permissions (resource_id,resource_table,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('12','aws_storages','1','0','1','0','1','0');
+INSERT INTO public.permissions (resource_id,resource_table,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('13','aws_storages','1','1','1','1','1','1');]]></appended-sql>
+	<position x="28.5" y="357.25"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
 	</column>
 	<column name="resource_id" not-null="true">
 		<type name="integer"/>
+	</column>
+	<column name="resource_table" not-null="true">
+		<type name="text"/>
 	</column>
 	<column name="read" not-null="true">
 		<type name="boolean"/>
@@ -464,7 +467,9 @@ INSERT INTO public.permissions (resource_id,read,write,delete,read_permission,wr
 <table name="link_groups_permissions">
 	<schema name="public"/>
 	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('1','1');]]></appended-sql>
+	<appended-sql><![CDATA[INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('1','1');
+INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('2','2');
+INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('3','3');]]></appended-sql>
 	<position x="38.75" y="263"/>
 	<column name="group_id" not-null="true">
 		<type name="integer"/>
@@ -480,7 +485,7 @@ INSERT INTO public.permissions (resource_id,read,write,delete,read_permission,wr
 <view name="accounts">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="1807" y="102.5"/>
+	<position x="1758.25" y="93.75"/>
 	<reference>
 		<expression><![CDATA[SELECT
 aws_accounts.id, aws_accounts.login, aws_accounts.password, aws_accounts.type, aws_accounts.aws_access_key_id, aws_accounts.aws_secret_access_key_id, aws_accounts.aws_account_id AS account_id, aws_accounts.aws_canonical_user_id,  NULL AS azr_storage_account_id, aws_accounts.group_id,'aws' AS cloud_vendor
@@ -549,7 +554,7 @@ INSERT INTO public.aws_storages (id,name,description,aws_account_id) VALUES ('13
 <view name="storages">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="1827" y="634.25"/>
+	<position x="1767" y="631.75"/>
 	<reference>
 		<expression><![CDATA[SELECT
 aws_storages.id, aws_storages.name, aws_storages.description, aws_storages.aws_account_id AS owner_account_id, 'aws' AS cloud_vendor
@@ -563,31 +568,10 @@ public.azr_storages;]]></expression>
 	</reference>
 </view>
 
-<table name="resources">
-	<schema name="public"/>
-	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.resources (item_id,item_type) VALUES ('1','aws_storage');
-INSERT INTO public.resources (item_id,item_type) VALUES ('12','aws_storage');
-INSERT INTO public.resources (item_id,item_type) VALUES ('13','aws_storage');]]></appended-sql>
-	<position x="493.5" y="371"/>
-	<column name="id" not-null="true">
-		<type name="serial"/>
-	</column>
-	<column name="item_id" not-null="true">
-		<type name="integer"/>
-	</column>
-	<column name="item_type" not-null="true">
-		<type name="text"/>
-	</column>
-	<constraint name="resource_id" type="pk-constr" table="public.resources">
-		<columns names="id" ref-type="src-columns"/>
-	</constraint>
-</table>
-
 <view name="storage_folders" sql-disabled="true">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="1827" y="920.25"/>
+	<position x="1764.5" y="891.5"/>
 	<reference>
 		<expression><![CDATA[SELECT
 aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_position, 'aws' AS cloud_vendor
@@ -689,7 +673,7 @@ VALUES ('mon3Bucket','Mon tout premier',CURRENT_TIMESTAMP,'private','STANDARD','
 <view name="storage_containers">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="1826.25" y="815"/>
+	<position x="1762.5" y="790"/>
 	<reference>
 		<expression><![CDATA[SELECT
 aws_storage_containers.id, aws_storage_containers.name, aws_storage_containers.description, aws_storage_containers.creation_date, aws_storage_containers.acl, aws_storage_containers.storage_class, aws_storage_containers.region, aws_storage_containers.size, aws_storage_containers.cache_control, aws_storage_containers.cache_disposition, aws_storage_containers.cache_encoding, aws_storage_containers.expect, aws_storage_containers.request_payment, aws_storage_containers.versionning, aws_storage_containers.lifecycle_configuration, aws_storage_containers.policy_configuration, aws_storage_containers.notification_configuration, aws_storage_containers.logging_configuration, aws_storage_containers.xregion_replication, aws_storage_containers.tags, NULL AS metadata, aws_storage_containers.storage_id, 'aws' AS cloud_vendor
@@ -830,7 +814,7 @@ END;]]></definition>
 	<appended-sql><![CDATA[INSERT INTO public.register (key,value) VALUES ('configuration_check_list','0');
 INSERT INTO public.register (key,value) VALUES ('aws_iam_api_version','2010-05-08');
 INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01');]]></appended-sql>
-	<position x="2281.25" y="101.25"/>
+	<position x="2070" y="92.5"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
 	</column>
@@ -846,9 +830,53 @@ INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01
 </table>
 
 <textbox name="Utils" font-size="9">
-	<position x="2318.75" y="12.5"/>
+	<position x="2107.5" y="38.75"/>
 	<comment><![CDATA[Utils]]></comment>
 </textbox>
+
+<textbox name="Cloud Accounts" font-size="9">
+	<position x="1120" y="267.5"/>
+	<comment><![CDATA[Cloud Accounts]]></comment>
+</textbox>
+
+<view name="resources">
+	<schema name="public"/>
+	<role name="root"/>
+	<position x="1770" y="437.5"/>
+	<reference>
+		<expression><![CDATA[SELECT id, name, 'aws_storages' AS resource_table
+FROM aws_storages
+UNION ALL
+SELECT id, name, 'azr_storages' AS resource_table
+FROM azr_storages
+UNION ALL
+SELECT id, name, 'aws_storage_containers' AS resource_table
+FROM aws_storage_containers
+UNION ALL
+SELECT id, name, 'azr_storage_containers' AS resource_table
+FROM azr_storage_containers
+UNION ALL
+SELECT id, name, 'aws_storage_folders' AS resource_table
+FROM aws_storage_objects
+WHERE
+type = 'folder'
+UNION ALL
+SELECT id, name, 'aws_storage_files' AS resource_table
+FROM aws_storage_objects
+WHERE
+type != 'folder'
+UNION ALL
+SELECT id, name, 'azr_storage_folders' AS resource_table
+FROM azr_storage_objects
+WHERE
+type = 'folder'
+UNION ALL
+SELECT id, name, 'azr_storage_files' AS resource_table
+FROM azr_storage_objects
+WHERE
+type != 'folder']]></expression>
+	</reference>
+</view>
 
 <constraint name="aws_storage_container_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storage_containers" table="public.aws_storage_objects">
@@ -898,12 +926,6 @@ INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
-<constraint name="resource_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.resources" table="public.permissions">
-	<columns names="resource_id" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
-
 <constraint name="group_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.groups" table="public.link_groups_permissions">
 	<columns names="group_id" ref-type="src-columns"/>
@@ -913,12 +935,6 @@ INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01
 <constraint name="permission_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.permissions" table="public.link_groups_permissions">
 	<columns names="permission_id" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
-
-<constraint name="aws_storage_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storages" table="public.resources">
-	<columns names="item_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
@@ -1022,20 +1038,6 @@ INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01
 		<position x="1680.65" y="894.35"/>
 	</line>
 </relationship>
-
-<relationship name="rel_resources_aws_storage" type="relfk"
-	 src-table="public.resources"
-	 dst-table="public.aws_storages"
-	 src-required="false" dst-required="false">
-	<line>
-		<position x="708.25" y="413.6"/>
-	</line>
-</relationship>
-
-<relationship name="rel_permissions_resources" type="relfk"
-	 src-table="public.permissions"
-	 dst-table="public.resources"
-	 src-required="false" dst-required="false"/>
 
 <relationship name="rel_aws_storage_objects_aws_storage_containers" type="relfk"
 	 src-table="public.aws_storage_objects"
