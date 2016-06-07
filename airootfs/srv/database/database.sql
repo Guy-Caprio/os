@@ -57,7 +57,7 @@ CREATE TABLE public.aws_storage_objects(
 	object_lb integer NOT NULL,
 	object_ub integer NOT NULL,
 	CONSTRAINT aws_storage_object_id PRIMARY KEY (id),
-	CONSTRAINT aws_storage_object_name_unique UNIQUE (name)
+	CONSTRAINT unique_aws_storage_object_name UNIQUE (name)
 
 );
 -- ddl-end --
@@ -77,10 +77,11 @@ CREATE TABLE public.users(
 	login text NOT NULL,
 	password text NOT NULL,
 	description text,
+	email text,
 	fname text,
 	lname text,
-	email text,
-	CONSTRAINT user_id PRIMARY KEY (id)
+	CONSTRAINT user_id PRIMARY KEY (id),
+	CONSTRAINT unique_user_login UNIQUE (login)
 
 )WITH ( OIDS = TRUE );
 -- ddl-end --
@@ -116,7 +117,7 @@ CREATE TABLE public.azr_storage_containers(
 	metadata text,
 	storage_id integer NOT NULL,
 	CONSTRAINT azr_container_id PRIMARY KEY (id),
-	CONSTRAINT azr_storage_container_name_unique UNIQUE (name)
+	CONSTRAINT unique_azr_storage_container_name UNIQUE (name)
 
 );
 -- ddl-end --
@@ -147,7 +148,7 @@ CREATE TABLE public.azr_storage_objects(
 	object_lb integer NOT NULL,
 	object_ub integer NOT NULL,
 	CONSTRAINT azr_blob_id PRIMARY KEY (id),
-	CONSTRAINT azr_storage_object_name_unique UNIQUE (name)
+	CONSTRAINT unique_azr_storage_object_name UNIQUE (name)
 
 );
 -- ddl-end --
@@ -196,8 +197,9 @@ CREATE TABLE public.azr_accounts(
 	password text NOT NULL,
 	azr_subscription_id text NOT NULL,
 	azr_storage_account_id integer,
-	group_id integer,
-	CONSTRAINT azr_account_id PRIMARY KEY (id)
+	user_id integer,
+	CONSTRAINT azr_account_id PRIMARY KEY (id),
+	CONSTRAINT unique_azr_account_login UNIQUE (login)
 
 );
 -- ddl-end --
@@ -205,7 +207,7 @@ ALTER TABLE public.azr_accounts OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.azr_accounts (login,password,azr_subscription_id,azr_storage_account_id,group_id) VALUES ('bouren_n@etna-alternance.net','secret42','680fe13a-97f0-4f03-858c-e61f151f100d','1','1');
+INSERT INTO public.azr_accounts (login,password,azr_subscription_id,azr_storage_account_id,user_id) VALUES ('bouren_n@etna-alternance.net','secret42','680fe13a-97f0-4f03-858c-e61f151f100d','1','1');
 -- ddl-end --
 
 -- object: public.aws_storage_acl_type | type: TYPE --
@@ -227,8 +229,9 @@ CREATE TABLE public.aws_accounts(
 	aws_secret_access_key_id text NOT NULL,
 	aws_account_id text NOT NULL,
 	aws_canonical_user_id text NOT NULL,
-	group_id integer,
-	CONSTRAINT aws_account_id PRIMARY KEY (id)
+	user_id integer,
+	CONSTRAINT aws_account_id PRIMARY KEY (id),
+	CONSTRAINT unique_aws_account_login UNIQUE (login)
 
 );
 -- ddl-end --
@@ -236,7 +239,7 @@ ALTER TABLE public.aws_accounts OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.aws_accounts (login,password,type,aws_access_key_id,aws_secret_access_key_id,aws_account_id,aws_canonical_user_id,group_id) VALUES ('bouren_n@etna-alternance.net','etna42','root','AKIAIZL4Y6D4JDUPSM5A','RkNkRDBXZ8Midrc6ZnH3N5Iwz+6LIDKx7WEfE9XY','A5472-4984-3702','fa47085858ab564334ea42d468c62785f177627106af3bcfbc13cc2dfbe2e497','1');
+INSERT INTO public.aws_accounts (login,password,type,aws_access_key_id,aws_secret_access_key_id,aws_account_id,aws_canonical_user_id,user_id) VALUES ('bouren_n@etna-alternance.net','etna42','root','AKIAIZL4Y6D4JDUPSM5A','RkNkRDBXZ8Midrc6ZnH3N5Iwz+6LIDKx7WEfE9XY','A5472-4984-3702','fa47085858ab564334ea42d468c62785f177627106af3bcfbc13cc2dfbe2e497','1');
 -- ddl-end --
 
 -- object: public.storage_objects | type: VIEW --
@@ -264,7 +267,8 @@ CREATE TABLE public.groups(
 	name text NOT NULL,
 	description text,
 	type text NOT NULL,
-	CONSTRAINT group_id PRIMARY KEY (id)
+	CONSTRAINT group_id PRIMARY KEY (id),
+	CONSTRAINT unique_group_name UNIQUE (name)
 
 );
 -- ddl-end --
@@ -297,14 +301,12 @@ INSERT INTO public.link_groups_users (group_id,user_id) VALUES ('1','1');
 -- DROP TABLE IF EXISTS public.permissions CASCADE;
 CREATE TABLE public.permissions(
 	id serial NOT NULL,
-	resource_id integer NOT NULL,
-	resource_table text NOT NULL,
-	read boolean NOT NULL,
-	write boolean NOT NULL,
-	delete boolean NOT NULL,
-	read_permission boolean NOT NULL,
-	write_permission boolean NOT NULL,
-	delete_permission boolean NOT NULL,
+	read boolean NOT NULL DEFAULT false,
+	write boolean NOT NULL DEFAULT false,
+	delete boolean NOT NULL DEFAULT false,
+	read_permission boolean NOT NULL DEFAULT false,
+	write_permission boolean NOT NULL DEFAULT false,
+	delete_permission boolean NOT NULL DEFAULT false,
 	CONSTRAINT permission_id PRIMARY KEY (id)
 
 );
@@ -313,9 +315,9 @@ ALTER TABLE public.permissions OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.permissions (resource_id,resource_table,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('1','aws_storages','1','1','1','0','0','0');
-INSERT INTO public.permissions (resource_id,resource_table,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('12','aws_storages','1','0','1','0','1','0');
-INSERT INTO public.permissions (resource_id,resource_table,read,write,delete,read_permission,write_permission,delete_permission) VALUES ('13','aws_storages','1','1','1','1','1','1');
+INSERT INTO public.permissions (read,write,delete,read_permission,write_permission,delete_permission) VALUES ('1','1','1','0','0','0');
+INSERT INTO public.permissions (read,write,delete,read_permission,write_permission,delete_permission) VALUES ('1','0','1','0','1','0');
+INSERT INTO public.permissions (read,write,delete,read_permission,write_permission,delete_permission) VALUES ('1','1','1','1','1','1');
 -- ddl-end --
 
 -- object: public.link_groups_permissions | type: TABLE --
@@ -342,12 +344,12 @@ CREATE VIEW public.accounts
 AS 
 
 SELECT
-aws_accounts.id, aws_accounts.login, aws_accounts.password, aws_accounts.type, aws_accounts.aws_access_key_id, aws_accounts.aws_secret_access_key_id, aws_accounts.aws_account_id AS account_id, aws_accounts.aws_canonical_user_id,  NULL AS azr_storage_account_id, aws_accounts.group_id,'aws' AS cloud_vendor
+aws_accounts.id, aws_accounts.login, aws_accounts.password, aws_accounts.type, aws_accounts.aws_access_key_id, aws_accounts.aws_secret_access_key_id, aws_accounts.aws_account_id AS account_id, aws_accounts.aws_canonical_user_id,  NULL AS azr_storage_account_id, aws_accounts.user_id,'aws' AS cloud_vendor
 FROM
 public.aws_accounts
 UNION ALL
 SELECT
-azr_accounts.id, azr_accounts.login, azr_accounts.password, NULL AS type, NULL AS aws_access_key_id, NULL AS aws_secret_access_key_id, azr_accounts.azr_subscription_id AS account_id, NULL AS aws_canonical_user_id, azr_accounts.azr_storage_account_id, azr_accounts.group_id, 'azr' AS cloud_vendor
+azr_accounts.id, azr_accounts.login, azr_accounts.password, NULL AS type, NULL AS aws_access_key_id, NULL AS aws_secret_access_key_id, azr_accounts.azr_subscription_id AS account_id, NULL AS aws_canonical_user_id, azr_accounts.azr_storage_account_id, azr_accounts.user_id, 'azr' AS cloud_vendor
 FROM 
 public.azr_accounts;
 -- ddl-end --
@@ -362,7 +364,7 @@ CREATE TABLE public.aws_storages(
 	description text,
 	aws_account_id integer NOT NULL,
 	CONSTRAINT aws_storage_id PRIMARY KEY (id),
-	CONSTRAINT aws_storage_name_unique UNIQUE (name)
+	CONSTRAINT unique_aws_storage_name UNIQUE (name)
 
 );
 -- ddl-end --
@@ -383,7 +385,7 @@ CREATE TABLE public.azr_storages(
 	description text,
 	azr_storage_account_id integer NOT NULL,
 	CONSTRAINT azr_storage_id PRIMARY KEY (id),
-	CONSTRAINT azr_storage_name_unique UNIQUE (name)
+	CONSTRAINT unique_azr_storage_name UNIQUE (name)
 
 );
 -- ddl-end --
@@ -412,28 +414,28 @@ public.azr_storages;
 ALTER VIEW public.storages OWNER TO root;
 -- ddl-end --
 
--- -- object: public.storage_folders | type: VIEW --
--- -- DROP VIEW IF EXISTS public.storage_folders CASCADE;
--- CREATE VIEW public.storage_folders
--- AS 
--- 
--- SELECT
--- aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_position, 'aws' AS cloud_vendor
--- FROM
--- public.aws_storage_objects
--- WHERE
--- type = 'folder'
--- UNION ALL
--- SELECT
--- azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, NULL AS storage_class, azr_storage_objects.azr_blob_type, azr_storage_objects.type, azr_storage_objects.size, azr_storage_objects.language, azr_storage_objects.md5hash, azr_storage_objects.metadata, NULL AS amz_website_redirect_location, azr_storage_objects.content_disposition, azr_storage_objects.lease_id, azr_storage_objects.lease_duration, azr_storage_objects.container_id, azr_storage_objects.object_level, azr_storage_objects.object_position, 'azr' AS cloud_vendor
--- FROM
--- public.azr_storage_objects
--- WHERE
--- type = 'folder';
--- -- ddl-end --
--- ALTER VIEW public.storage_folders OWNER TO root;
--- -- ddl-end --
--- 
+-- object: public.storage_folders | type: VIEW --
+-- DROP VIEW IF EXISTS public.storage_folders CASCADE;
+CREATE VIEW public.storage_folders
+AS 
+
+SELECT
+aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_lb, aws_storage_objects.object_ub, 'aws' AS cloud_vendor
+FROM
+public.aws_storage_objects
+WHERE
+type = 'folder'
+UNION ALL
+SELECT
+azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, NULL AS storage_class, azr_storage_objects.azr_blob_type, azr_storage_objects.type, azr_storage_objects.size, azr_storage_objects.language, azr_storage_objects.md5hash, azr_storage_objects.metadata, NULL AS amz_website_redirect_location, azr_storage_objects.content_disposition, azr_storage_objects.lease_id, azr_storage_objects.lease_duration, azr_storage_objects.container_id, azr_storage_objects.object_level, azr_storage_objects.object_lb, azr_storage_objects.object_ub, 'azr' AS cloud_vendor
+FROM
+public.azr_storage_objects
+WHERE
+type = 'folder';
+-- ddl-end --
+ALTER VIEW public.storage_folders OWNER TO root;
+-- ddl-end --
+
 -- object: public.aws_storage_containers | type: TABLE --
 -- DROP TABLE IF EXISTS public.aws_storage_containers CASCADE;
 CREATE TABLE public.aws_storage_containers(
@@ -459,7 +461,7 @@ CREATE TABLE public.aws_storage_containers(
 	tags json,
 	storage_id integer NOT NULL,
 	CONSTRAINT container_id PRIMARY KEY (id),
-	CONSTRAINT aws_storage_container_name_unique UNIQUE (name)
+	CONSTRAINT unique_aws_storage_container_name UNIQUE (name)
 
 );
 -- ddl-end --
@@ -591,10 +593,9 @@ CREATE TRIGGER shift_object_position_on_delete
 -- object: public.register | type: TABLE --
 -- DROP TABLE IF EXISTS public.register CASCADE;
 CREATE TABLE public.register(
-	id serial NOT NULL,
 	key text NOT NULL,
-	value text,
-	CONSTRAINT register_id_key PRIMARY KEY (id,key)
+	value text NOT NULL DEFAULT 0,
+	CONSTRAINT register_id_key PRIMARY KEY (key)
 
 );
 -- ddl-end --
@@ -612,39 +613,117 @@ INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01
 CREATE VIEW public.resources
 AS 
 
-SELECT id, name, 'aws_storages' AS resource_table
+SELECT id, name, description, 'aws_storages' AS resource_table
 FROM aws_storages
 UNION ALL
-SELECT id, name, 'azr_storages' AS resource_table
+SELECT id, name, description, 'azr_storages' AS resource_table
 FROM azr_storages
 UNION ALL
-SELECT id, name, 'aws_storage_containers' AS resource_table
+SELECT id, name, description, 'aws_storage_containers' AS resource_table
 FROM aws_storage_containers
 UNION ALL
-SELECT id, name, 'azr_storage_containers' AS resource_table
+SELECT id, name, description, 'azr_storage_containers' AS resource_table
 FROM azr_storage_containers
 UNION ALL
-SELECT id, name, 'aws_storage_folders' AS resource_table
+SELECT id, name, description, 'aws_storage_folders' AS resource_table
 FROM aws_storage_objects
 WHERE
 type = 'folder'
 UNION ALL
-SELECT id, name, 'aws_storage_files' AS resource_table
+SELECT id, name, description, 'aws_storage_files' AS resource_table
 FROM aws_storage_objects
 WHERE
 type != 'folder'
 UNION ALL
-SELECT id, name, 'azr_storage_folders' AS resource_table
+SELECT id, name, description, 'azr_storage_folders' AS resource_table
 FROM azr_storage_objects
 WHERE
 type = 'folder'
 UNION ALL
-SELECT id, name, 'azr_storage_files' AS resource_table
+SELECT id, name, description, 'azr_storage_files' AS resource_table
 FROM azr_storage_objects
 WHERE
 type != 'folder';
 -- ddl-end --
 ALTER VIEW public.resources OWNER TO root;
+-- ddl-end --
+
+-- object: public.link_permissions_aws_storages | type: TABLE --
+-- DROP TABLE IF EXISTS public.link_permissions_aws_storages CASCADE;
+CREATE TABLE public.link_permissions_aws_storages(
+	permission_id integer NOT NULL,
+	aws_storage_id integer NOT NULL,
+	CONSTRAINT link_permissions_aws_storages_pk PRIMARY KEY (permission_id,aws_storage_id)
+
+);
+-- ddl-end --
+ALTER TABLE public.link_permissions_aws_storages OWNER TO root;
+-- ddl-end --
+
+-- Appended SQL commands --
+INSERT INTO public.link_permissions_aws_storages (permission_id,aws_storage_id) VALUES ('1','12');
+INSERT INTO public.link_permissions_aws_storages (permission_id,aws_storage_id) VALUES ('2','1');
+INSERT INTO public.link_permissions_aws_storages (permission_id,aws_storage_id) VALUES ('3','13');
+-- ddl-end --
+
+-- object: public.link_permissions_aws_storage_containers | type: TABLE --
+-- DROP TABLE IF EXISTS public.link_permissions_aws_storage_containers CASCADE;
+CREATE TABLE public.link_permissions_aws_storage_containers(
+	permission_id integer NOT NULL,
+	aws_storage_container_id integer NOT NULL,
+	CONSTRAINT link_permissions_aws_storage_containers_pk PRIMARY KEY (permission_id,aws_storage_container_id)
+
+);
+-- ddl-end --
+ALTER TABLE public.link_permissions_aws_storage_containers OWNER TO root;
+-- ddl-end --
+
+-- object: public.link_permissions_aws_storage_objects | type: TABLE --
+-- DROP TABLE IF EXISTS public.link_permissions_aws_storage_objects CASCADE;
+CREATE TABLE public.link_permissions_aws_storage_objects(
+	permission_id integer NOT NULL,
+	aws_storage_object_id integer NOT NULL,
+	CONSTRAINT link_permissions_aws_storage_objects_pk PRIMARY KEY (permission_id,aws_storage_object_id)
+
+);
+-- ddl-end --
+ALTER TABLE public.link_permissions_aws_storage_objects OWNER TO root;
+-- ddl-end --
+
+-- object: public.link_permissions_azr_storages | type: TABLE --
+-- DROP TABLE IF EXISTS public.link_permissions_azr_storages CASCADE;
+CREATE TABLE public.link_permissions_azr_storages(
+	permission_id integer NOT NULL,
+	azr_storage_id integer NOT NULL,
+	CONSTRAINT link_permissions_azr_storages_pk PRIMARY KEY (permission_id,azr_storage_id)
+
+);
+-- ddl-end --
+ALTER TABLE public.link_permissions_azr_storages OWNER TO root;
+-- ddl-end --
+
+-- object: public.link_permissions_azr_storage_containers | type: TABLE --
+-- DROP TABLE IF EXISTS public.link_permissions_azr_storage_containers CASCADE;
+CREATE TABLE public.link_permissions_azr_storage_containers(
+	permission_id integer NOT NULL,
+	azr_storage_container_id integer NOT NULL,
+	CONSTRAINT link_permissions_azr_storage_containers_pk PRIMARY KEY (permission_id,azr_storage_container_id)
+
+);
+-- ddl-end --
+ALTER TABLE public.link_permissions_azr_storage_containers OWNER TO root;
+-- ddl-end --
+
+-- object: public.link_permissions_azr_storage_objects | type: TABLE --
+-- DROP TABLE IF EXISTS public.link_permissions_azr_storage_objects CASCADE;
+CREATE TABLE public.link_permissions_azr_storage_objects(
+	permission_id integer NOT NULL,
+	azr_storage_object_id integer NOT NULL,
+	CONSTRAINT link_permissions_azr_storage_objects_pk PRIMARY KEY (permission_id,azr_storage_object_id)
+
+);
+-- ddl-end --
+ALTER TABLE public.link_permissions_azr_storage_objects OWNER TO root;
 -- ddl-end --
 
 -- object: aws_storage_container_id | type: CONSTRAINT --
@@ -668,10 +747,10 @@ REFERENCES public.azr_storage_containers (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
--- object: group_id | type: CONSTRAINT --
--- ALTER TABLE public.azr_accounts DROP CONSTRAINT IF EXISTS group_id CASCADE;
-ALTER TABLE public.azr_accounts ADD CONSTRAINT group_id FOREIGN KEY (group_id)
-REFERENCES public.groups (id) MATCH FULL
+-- object: user_id | type: CONSTRAINT --
+-- ALTER TABLE public.azr_accounts DROP CONSTRAINT IF EXISTS user_id CASCADE;
+ALTER TABLE public.azr_accounts ADD CONSTRAINT user_id FOREIGN KEY (user_id)
+REFERENCES public.users (id) MATCH FULL
 ON DELETE SET NULL ON UPDATE NO ACTION;
 -- ddl-end --
 
@@ -682,10 +761,10 @@ REFERENCES public.azr_storage_accounts (id) MATCH FULL
 ON DELETE SET NULL ON UPDATE NO ACTION;
 -- ddl-end --
 
--- object: group_id | type: CONSTRAINT --
--- ALTER TABLE public.aws_accounts DROP CONSTRAINT IF EXISTS group_id CASCADE;
-ALTER TABLE public.aws_accounts ADD CONSTRAINT group_id FOREIGN KEY (group_id)
-REFERENCES public.groups (id) MATCH FULL
+-- object: user_id | type: CONSTRAINT --
+-- ALTER TABLE public.aws_accounts DROP CONSTRAINT IF EXISTS user_id CASCADE;
+ALTER TABLE public.aws_accounts ADD CONSTRAINT user_id FOREIGN KEY (user_id)
+REFERENCES public.users (id) MATCH FULL
 ON DELETE SET NULL ON UPDATE CASCADE;
 -- ddl-end --
 
@@ -750,6 +829,55 @@ ON DELETE CASCADE ON UPDATE NO ACTION;
 ALTER TABLE public.aws_permission_configuration ADD CONSTRAINT aws_permission_configuration_object_id FOREIGN KEY (item_id)
 REFERENCES public.aws_storage_objects (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: permission_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_aws_storages DROP CONSTRAINT IF EXISTS permission_id CASCADE;
+ALTER TABLE public.link_permissions_aws_storages ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
+REFERENCES public.permissions (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: aws_storage_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_aws_storages DROP CONSTRAINT IF EXISTS aws_storage_id CASCADE;
+ALTER TABLE public.link_permissions_aws_storages ADD CONSTRAINT aws_storage_id FOREIGN KEY (aws_storage_id)
+REFERENCES public.aws_storages (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: permission_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_aws_storage_containers DROP CONSTRAINT IF EXISTS permission_id CASCADE;
+ALTER TABLE public.link_permissions_aws_storage_containers ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
+REFERENCES public.permissions (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: permission_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_aws_storage_objects DROP CONSTRAINT IF EXISTS permission_id CASCADE;
+ALTER TABLE public.link_permissions_aws_storage_objects ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
+REFERENCES public.permissions (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: permission_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_azr_storages DROP CONSTRAINT IF EXISTS permission_id CASCADE;
+ALTER TABLE public.link_permissions_azr_storages ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
+REFERENCES public.permissions (id) MATCH FULL
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: permission_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_azr_storage_containers DROP CONSTRAINT IF EXISTS permission_id CASCADE;
+ALTER TABLE public.link_permissions_azr_storage_containers ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
+REFERENCES public.permissions (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: permission_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_azr_storage_objects DROP CONSTRAINT IF EXISTS permission_id CASCADE;
+ALTER TABLE public.link_permissions_azr_storage_objects ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
+REFERENCES public.permissions (id) MATCH FULL
+ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ddl-end --
 
 
