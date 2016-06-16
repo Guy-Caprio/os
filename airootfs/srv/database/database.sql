@@ -542,8 +542,11 @@ CREATE FUNCTION public.aws_storage_objects_insert ()
 	AS $$
 BEGIN
 UPDATE aws_storage_objects
-SET object_position = int4range(lower(object_position), upper(object_position) + 2, '[)')
-WHERE upper(object_position) > lower(NEW.object_position);
+SET object_ub = object_ub + 2
+WHERE object_ub >= NEW.object_lb;
+UPDATE aws_storage_objects
+SET object_lb = object_lb + 2
+WHERE object_lb >= NEW.object_lb;
 RETURN NEW;
 END;
 $$;
@@ -563,8 +566,11 @@ CREATE FUNCTION public.aws_storage_objects_delete ()
 	AS $$
 BEGIN
 UPDATE aws_storage_objects
-SET object_position = int4range(lower(object_position), upper(object_position) + 2, '[)')
-WHERE upper(object_position) > lower(NEW.object_position);
+SET object_lb = object_lb - 2
+WHERE object_lb >= OLD.object_lb;
+UPDATE aws_storage_objects
+SET object_ub = object_ub - 2
+WHERE object_ub >= OLD.object_lb;
 RETURN NEW;
 END;
 $$;

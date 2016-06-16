@@ -1,0 +1,288 @@
+-- procédure d'insertion dans l'arbre [Frédéric Brouard, Philippe Boucault 25/09/2002]
+
+CREATE PROCEDURE SP_INS_NOMENCLATURE
+
+      @lib varchar(32),     -- le libellé à insérer
+      @desc varchar(1024),  -- la description à insérer
+      @id_parent int,       -- Ancêtre ou frère point d'origine de l'insertion 
+      @mode char(2)         -- le mode d'insertion :
+                                    -- FA : Fils Ainé,
+                                    -- FC : Fils Cadet,
+                                    -- GF : Grand frère,
+                                    -- PF : Petit Frère,
+                                    -- P  : Père
+AS
+
+ DECLARE @OK int
+
+ DECLARE @lbp int          -- borne gauche parent
+ DECLARE @ubp int          -- borne droite parent 
+ DECLARE @lvlp int         -- niveau parent 
+
+ DECLARE @lbi int          -- borne gauche à insérer
+ DECLARE @ubi int          -- borne droite à insérer
+ DECLARE @lvli int         -- niveau à insérer
+
+ SET NOCOUNT ON
+
+-- gestion des effets de bord
+ IF @mode IS NULL OR @lib IS NULL OR @lib = ''
+ BEGIN
+    RAISERROR ('Insertion impossible sans libellé ou mode ! (TABLE T_NOMENCLATURE_NMC)', 16, 1)
+    RETURN
+ END
+
+ SET @mode = UPPER(@mode)
+ IF NOT( @mode = 'FA' OR @mode = 'FC' OR @mode = 'GF' OR @mode = 'PF'  OR @mode = 'P')
+ BEGIN
+    RAISERROR ('Insertion impossible, mode inconnu !', 16, 1)
+    RETURN
+ END
+
+ -- démarrage transaction 
+ SET TRANSACTION ISOLATION LEVEL SERIALIZABLE 
+ BEGIN TRANSACTION INSERT_NOMENCLATURE
+ 
+
+-- pas de parent => seul cas, table vide ou insertion d'un collatéral 
+ IF @id_parent IS NULL
+ BEGIN
+    SELECT @OK = count(*) FROM T_NOMENCLATURE_NMC
+    IF @OK = 0 OR @OK IS NULL
+    BEGIN
+       IF @mode = 'FA' OR @mode = 'FC'
+       BEGIN
+          RAISERROR ('Insertion impossible dans un arbre pour un fils sans père !', 16, 1)
+          GOTO LBL_ERROR
+          RETURN
+       END
+       ELSE
+       BEGIN
+-- première insertion 
+          INSERT INTO T_NOMENCLATURE_NMC ( NMC_LIBELLE, NMC_DESCRIPTION, NMC_NIVEAU, NMC_BG, NMC_BD )
+                 VALUES( @lib, @desc, 0, 1, 2 )
+          IF @@ERROR <> 0
+          BEGIN
+             GOTO LBL_ERROR
+             RETURN
+          END
+          COMMIT TRANSACTION INSERT_NOMENCLATURE
+          SELECT @@IDENTITY
+          RETURN
+       END
+    END
+    ELSE 
+-- Insertion d'un collatéral 
+    BEGIN 
+       RAISERROR ('Insertion impossible dans un arbre pour un collatéral sans précision du parent !', 16, 1)
+       GOTO LBL_ERROR
+       RETURN
+    END
+ END
+
+-- Le parent existe toujours ?
+ SELECT @OK = count(*) FROM T_NOMENCLATURE_NMC WHERE NMC_ID = @id_parent
+ IF @OK = 0 OR @OK IS NULL
+ BEGIN
+    RAISERROR ('Insertion impossible, le parent n''existe plus !', 16, 1)
+    GOTO LBL_ERROR
+    RETURN
+ END
+
+-- On a un parent : on récupère ses éléments
+ SELECT @lbp = NMC_BG, @ubp = NMC_BD, @lvlp = NMC_NIVEAU 
+        FROM T_NOMENCLATURE_NMC 
+        WHERE NMC_ID = @id_parent
+
+-- insertion d'un père
+ IF @mode = 'P'
+ BEGIN
+    -- Décalage de l'ensemble colatéral droit
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BD = NMC_BD + 2
+           WHERE NMC_BD > @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BG = NMC_BG + 2
+           WHERE NMC_BG > @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+
+    -- Décalalage ensemble visé vers le bas
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BG = NMC_BG + 1,
+               NMC_BD = NMC_BD + 1,
+               NMC_NIVEAU = NMC_NIVEAU + 1
+           WHERE NMC_BG >= @lbp AND NMC_BD <= @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+
+    -- Insertion du nouveau père
+    INSERT INTO T_NOMENCLATURE_NMC ( NMC_LIBELLE, NMC_DESCRIPTION, NMC_NIVEAU, NMC_BG, NMC_BD )
+           VALUES( @lib, @desc, @lvlp, @lbp, @ubp + 2 )
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+ END
+
+-- Insertion d'un grand frère
+ IF @mode = 'GF'
+ BEGIN
+    -- Limite sup.
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BD = NMC_BD + 2
+           WHERE NMC_BD > @lbp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+
+    -- Limite inf.
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BG = NMC_BG + 2
+           WHERE NMC_BG >= @lbp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+
+    SET @lbi = @lbp
+    SET @ubi = @lbp + 1
+    SET @lvli = @lvlp
+    INSERT INTO T_NOMENCLATURE_NMC ( NMC_LIBELLE, NMC_DESCRIPTION, NMC_NIVEAU, NMC_BG, NMC_BD )
+           VALUES( @lib, @desc, @lvli, @lbi, @ubi )
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+ END
+ 
+
+--  Insertion d'un petit frère 
+ IF @mode = 'PF'
+ BEGIN
+    -- Limite sup.
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BD = NMC_BD + 2
+           WHERE NMC_BD > @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+
+    -- Limite inf.
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BG = NMC_BG + 2
+           WHERE NMC_BG >= @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+
+    SET @lbi = @ubp + 1
+    SET @ubi = @ubp + 2
+    SET @lvli = @lvlp
+    INSERT INTO T_NOMENCLATURE_NMC ( NMC_LIBELLE, NMC_DESCRIPTION, NMC_NIVEAU, NMC_BG, NMC_BD )
+           VALUES( @lib, @desc, @lvli, @lbi, @ubi )
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+ END
+
+--  Insertion d'un fils ainé
+ IF @mode = 'FA'
+ BEGIN
+    -- Limite sup.
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BD = NMC_BD + 2
+           WHERE NMC_BD > @lbp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+
+    -- Limite inf.
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BG = NMC_BG + 2
+           WHERE NMC_BG > @lbp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+
+    SET @lbi = @lbp + 1
+    SET @ubi = @lbp + 2
+    SET @lvli = @lvlp + 1
+    INSERT INTO T_NOMENCLATURE_NMC ( NMC_LIBELLE, NMC_DESCRIPTION, NMC_NIVEAU, NMC_BG, NMC_BD )
+           VALUES( @lib, @desc, @lvli, @lbi, @ubi )
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+ END
+
+--  Insertion d'un fils cadet
+ IF @mode = 'FC'
+ BEGIN
+    -- Limite sup.
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BD = NMC_BD + 2
+           WHERE NMC_BD >= @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+
+    -- Limite inf.
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BG = NMC_BG + 2
+           WHERE NMC_BG > @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+
+    SET @lbi = @ubp
+    SET @ubi = @ubp + 1
+    SET @lvli = @lvlp + 1
+    INSERT INTO T_NOMENCLATURE_NMC ( NMC_LIBELLE, NMC_DESCRIPTION, NMC_NIVEAU, NMC_BG, NMC_BD )
+           VALUES( @lib, @desc, @lvli, @lbi, @ubi )
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+ END
+
+-- renvoi de l'identifiant de l'élément inséré
+ SELECT @@IDENTITY
+
+ COMMIT TRANSACTION INSERT_NOMENCLATURE
+ RETURN
+
+ LBL_ERROR:
+ ROLLBACK TRANSACTION INSERT_NOMENCLATURE

@@ -1,0 +1,140 @@
+
+-- procédure de suppression dans l'arbre [Frédéric Brouard, Philippe Boucault 25/09/2002]
+
+CREATE PROCEDURE SP_DEL_NOMENCLATURE
+
+      @id int,               -- l'identifiant cible de le suppression
+      @recurs bit            -- le mode de suppression (récursif ou non) :
+                                     -- 0 => on ne supprime que cet élément et on conserve le sous arbre
+                                     -- 1 => on supprime cet élément et le sous arbre
+
+AS
+
+ DECLARE @OK int
+
+ DECLARE @lbp int            -- borne gauche de la cible
+ DECLARE @ubp int            -- borne droite de la cible
+
+ DECLARE @delta int          -- écart introduit par la suppression du sous arbre
+
+ SET NOCOUNT ON
+
+-- gestion des effets de bord
+ IF @id IS NULL
+ BEGIN
+    RAISERROR ('Suppression impossible sans identifiant défini !', 16, 1)
+    RETURN
+ END
+
+ IF @recurs IS NULL
+ BEGIN
+    RAISERROR ('Suppression impossible sans indication de récursion !', 16, 1)
+    RETURN
+ END
+
+-- démarrage transaction 
+ SET TRANSACTION ISOLATION LEVEL SERIALIZABLE 
+ BEGIN TRANSACTION DELETE_NOMENCLATURE
+
+-- Il existe toujours ?
+ SELECT @OK = count(*) FROM T_NOMENCLATURE_NMC WHERE NMC_ID = @id
+ IF @OK = 0 OR @OK IS NULL
+ BEGIN
+    RAISERROR ('Suppression impossible, élément inexistant ! (TABLE T_NOMENCLATURE_NMC)', 16, 1)
+    GOTO LBL_ERROR
+    RETURN
+ END
+
+-- récupération des bornes cible
+ SELECT @lbp = NMC_BG, @ubp = NMC_BD
+        FROM T_NOMENCLATURE_NMC 
+        WHERE NMC_ID = @id
+ IF @@ERROR <> 0
+ BEGIN
+    GOTO LBL_ERROR
+    RETURN
+ END
+
+-- Suppression récursive ?
+ IF @recurs = 1
+ BEGIN
+-- OUI ! tout le sous arbre doit être supprimé
+    -- Calcul du Delta
+    SET @delta = @ubp - @lbp + 1
+    -- suppression de tous les éléments
+    DELETE FROM T_NOMENCLATURE_NMC
+           WHERE NMC_BG >= @lbp
+           AND NMC_BD <= @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+    -- décalage des bornes gauche
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BG = NMC_BG - @delta
+           WHERE NMC_BG > @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+    -- décalage des bornes droites
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BD = NMC_BD - @delta
+           WHERE NMC_BD > @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+ END
+ ELSE
+ BEGIN
+-- NON ! on ne supprime que l'élément
+    -- suppression de l'élément
+    DELETE FROM T_NOMENCLATURE_NMC
+           WHERE NMC_ID = @id
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+    -- décalage des bornes et niveau de l'arbre sous l'élément supprimé
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BG = NMC_BG - 1,
+               NMC_BD = NMC_BD - 1,
+               NMC_NIVEAU = NMC_NIVEAU - 1
+           WHERE NMC_BG > @lbp
+           AND NMC_BD &lt; @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+    -- décalage des bornes gauches des éléments situés à droite de l'élément supprimé
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BG = NMC_BG - 2
+           WHERE NMC_BG > @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+    -- décalage des bornes droites des éléments situés à droite de l'élément supprimé
+    UPDATE T_NOMENCLATURE_NMC
+           SET NMC_BD = NMC_BD - 2
+           WHERE NMC_BD > @ubp
+    IF @@ERROR <> 0
+    BEGIN
+       GOTO LBL_ERROR
+       RETURN
+    END
+ END
+
+ COMMIT TRANSACTION DELETE_NOMENCLATURE
+ RETURN
+
+ LBL_ERROR:
+ ROLLBACK TRANSACTION DELETE_NOMENCLATURE
+ RETURN
