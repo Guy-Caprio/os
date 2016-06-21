@@ -19,14 +19,14 @@ _settings() {
     nic3="net2"
     nic4="net3"
 
-    # IP(S) 
+    # IP(S)
     ip1_1="192.168.0.1"
     ip1_2="192.168.0.2"
     ip2_1="172.16.0.1"
     ip2_2="172.16.0.2"
 
     # HOSTNAME
-    hostname="cerebrow.domain"
+    hostname="app_name.domain"
 
     # RESOLVER(S)
     resolver_1="208.67.222.222"
