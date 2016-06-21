@@ -223,7 +223,7 @@ _install_postgresql() {
   su - postgres -c 'initdb --locale en_US.UTF-8 -E UTF8 -D '/data/postgres/data''
 
   systemctl enable postgresql.service
-  systemctl start postgresql.service
+  /usr/bin/pg_ctl -D /data/postgres/data -l /var/log/postgresql.log start
   if [[ $? -eq 0 ]]; then
     echo -e "PostgreSQL service started successfully."
   else
