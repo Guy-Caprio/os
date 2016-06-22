@@ -218,18 +218,25 @@ EOF
 _install_postgresql() {
   echo -e "PostgreSQL cluster initialization..." && sleep 2s
   arch-chroot /mnt /bin/bash <<EOF
+  # Setting up cluster
   mkdir -p /data/postgres/data
   chown -R postgres:postgres /data/postgres/
   su - postgres -c 'initdb --locale en_US.UTF-8 -E UTF8 -D '/data/postgres/data''
 
+  # Boot Startup service
   systemctl enable postgresql.service
-  /usr/bin/pg_ctl -D /data/postgres/data -l /var/log/postgresql.log start
+
+  # Start process in /run/
+  mkdir /run/postgresql
+  chown postgres:postgres /run/postgresql
+  su - postgres -c '/usr/bin/pg_ctl -D /data/postgres/data start'
   if [[ $? -eq 0 ]]; then
     echo -e "PostgreSQL service started successfully."
   else
     echo -e "PostgreSQL service failed to start."
   fi
 
+  # Restore SQL Dump file
   echo -e "PostgreSQL dump restoration..." && sleep 2s
   createdb app_name -U postgres
   psql app_name < /srv/database/database.sql -U postgres --set ON_ERROR_STOP=on
