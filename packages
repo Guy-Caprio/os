@@ -17,9 +17,10 @@ dhclient
 dialog
 mg
 
-##Cerebrow##
+##Cloudhook##
 postgresql
 nodejs
+nginx
 
 ##Testing##
 #virtualbox-guest-modules-arch

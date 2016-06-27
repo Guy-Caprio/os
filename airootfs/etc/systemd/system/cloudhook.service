@@ -1,0 +1,17 @@
+[Unit]
+Description=cloudhook
+After=postgresql.service
+
+[Service]
+ExecStart=/usr/bin/node /srv/http/core/server.js
+Restart=always
+StandardOutput=syslog
+SyslogIdentifier=cloudhook
+User=cloudhook
+Group=cloudhook
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+WorkingDirectory=/srv/http/core/
+
+[Install]
+WantedBy=multi-user.target
