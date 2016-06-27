@@ -1,1 +1,0 @@
-SUBSYSTEM=="net", DEVPATH=="/devices/pci*/*1c.0/*/net/*", NAME="net"

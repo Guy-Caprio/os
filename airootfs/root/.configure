@@ -7,57 +7,54 @@ red="\e[1;31m"
 green="\e[1;32m"
 yellow="\e[1;33m"
 nc="\e[0m"
+w=10
+h=60
 
 ##############################
 ## DEFAULT NETWORK SETTiNGS ##
 ##############################
 _settings() {
+  # INTERFACE(S)
+  nic1="net0"
+  # IP(S)
+  ip=$(ip -o -4 addr show | awk -F '[ /]+' '/global/ {print $4}' | head -1)
 
-    # INTERFACE(S)
-    nic1="net0"
-    nic2="net1"
-    nic3="net2"
-    nic4="net3"
-
-    # IP(S) 
-    ip1_1="192.168.0.1"
-    ip1_2="192.168.0.2"
-    ip2_1="172.16.0.1"
-    ip2_2="172.16.0.2"
-
-    # HOSTNAME
-    hostname="cerebrow.domain"
-
-    # RESOLVER(S)
-    resolver_1="208.67.222.222"
-    resolver_2="208.67.222.220"
-
-    # DEFAULT GATEWAY
-    defaultgw="192.168.0.254"
-
-    # ROUTES
-    static_route1="10.0.0.0/24 192.168.0.253"
 }
 
 ######################
 ## SERVICES CONTROL ##
 ######################
-#_services() {
-    #SSH
-    #NTP
-    #HTTP
-    #PGSQL
-    #NODE
-#}
+_services() {
+  services=(sshd ntpd postgresql cloudhook)
+
+  for (( i = 0; i < ${#services[@]}; i++ ))
+  do
+    systemctl status ${services[$i]}.service >/dev/null 2>&1
+    if [[ $? -eq 0 ]]
+    then
+      eval ${services[$i]}=ON
+    else
+      eval ${services[$i]}=OFF
+    fi
+  done
+
+  dialog --clear --title 'Services' --msgbox "Please, make sure following services are up:
+  [$sshd] SSHD
+  [$ntpd] NTPD
+  [$postgresql] POSTGRESQL
+  [$cloudhook] CLOUDHOOK " $w $h
+}
 
 ####################
 ## DIALOG SCRIPTS ##
 ####################
-_dialog_init() {
-    dialog --title 'Welcome' --msgbox 'Hello, world!' 5 20
+_end() {
+  dialog --title 'Installation Complete !' --msgbox "Cloudhook is available at: http://$ip" $w $h
 }
 
 ##############################
 ## RUN CONFIGURATION SCRIPT ##
 ##############################
-_dialog_init
+_settings
+_services
+_end

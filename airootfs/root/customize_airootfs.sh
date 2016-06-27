@@ -19,5 +19,8 @@ sed -i 's/#\(HandleSuspendKey=\)suspend/\1ignore/' /etc/systemd/logind.conf
 sed -i 's/#\(HandleHibernateKey=\)hibernate/\1ignore/' /etc/systemd/logind.conf
 sed -i 's/#\(HandleLidSwitch=\)suspend/\1ignore/' /etc/systemd/logind.conf
 
+# PostgreSQL.service customization
+sed -i 's/\/var\/lib\/postgres/\/data\/postgres/g' /usr/lib/systemd/system/postgresql.service
+
 systemctl enable pacman-init.service choose-mirror.service
 systemctl set-default multi-user.target
