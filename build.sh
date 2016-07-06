@@ -2,10 +2,10 @@
 
 set -e -u
 
-iso_name=app_name
-iso_version="0.0.1"
+iso_name=cloudhook
+iso_version="0.1.0"
 iso_build="$(date +%Y%m%d%H%M)"
-iso_label="app_name-${iso_version}"
+iso_label="cloudhook-${iso_version}"
 install_dir=arch
 work_dir=work
 out_dir=out

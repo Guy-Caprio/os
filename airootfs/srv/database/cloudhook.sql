@@ -1,5 +1,5 @@
 -- Database generated with pgModeler (PostgreSQL Database Modeler).
--- pgModeler  version: 0.8.2-beta1
+-- pgModeler  version: 0.8.2
 -- PostgreSQL version: 9.5
 -- Project Site: pgmodeler.com.br
 -- Model Author: bouren_n
@@ -15,7 +15,7 @@ CREATE ROLE root WITH
 	CREATEROLE
 	INHERIT
 	LOGIN
-	ENCRYPTED PASSWORD 'etna42'
+	ENCRYPTED PASSWORD 'cloudhook'
 	IN ROLE postgres;
 -- ddl-end --
 
@@ -542,11 +542,8 @@ CREATE FUNCTION public.aws_storage_objects_insert ()
 	AS $$
 BEGIN
 UPDATE aws_storage_objects
-SET object_ub = object_ub + 2
-WHERE object_ub >= NEW.object_lb;
-UPDATE aws_storage_objects
-SET object_lb = object_lb + 2
-WHERE object_lb >= NEW.object_lb;
+SET object_position = int4range(lower(object_position), upper(object_position) + 2, '[)')
+WHERE upper(object_position) > lower(NEW.object_position);
 RETURN NEW;
 END;
 $$;
@@ -566,11 +563,8 @@ CREATE FUNCTION public.aws_storage_objects_delete ()
 	AS $$
 BEGIN
 UPDATE aws_storage_objects
-SET object_lb = object_lb - 2
-WHERE object_lb >= OLD.object_lb;
-UPDATE aws_storage_objects
-SET object_ub = object_ub - 2
-WHERE object_ub >= OLD.object_lb;
+SET object_position = int4range(lower(object_position), upper(object_position) + 2, '[)')
+WHERE upper(object_position) > lower(NEW.object_position);
 RETURN NEW;
 END;
 $$;
