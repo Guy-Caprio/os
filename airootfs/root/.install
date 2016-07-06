@@ -14,7 +14,7 @@ nc="\e[0m"
 _timer() {
   for i in {5..1}
   do
-    echo -en "Installation in $i seconds - [Ctrl + C] to Cancel \r" && sleep 1
+    echo -en "$red[Warning] Installation in [$i] seconds - [Ctrl + C] to Cancel$n \r" && sleep 1
   done
 }
 
@@ -54,16 +54,16 @@ _settings() {
   # cloudhook PASSWORD
   CLOUDHOOK_passwd="cloudhook"
   # keymap
-  KEYMAP="fr"
+  KEYMAP="fr-pc"
 }
 
 #######################
 ## DiSK PARTiTiONiNG ##
 #######################
 _disk_part() {
-  echo -e "\n==> Partitionning disk... "
+  echo -e "\n$green==>$nc Partitionning disk..."
 
-  part_error="$red \n==> Partitionning error! Exiting... $nc"
+  part_error="\n$red==> Partitionning error! Exiting... $nc"
 
   # MBR or GPT
   echo -e "$FIRMWARE detected! Checking disk type..."
@@ -78,45 +78,58 @@ _disk_part() {
   echo -e "/dev/$_disk detected! The drive will be erased..."
 
   fdisk -l /dev/$_disk
-  echo -e "Creating $part_table partition table on /dev/$_disk..."
+  echo -e "\n$yellow==>$nc Creating $part_table partition table on /dev/$_disk..."
   printf "$part_code\nw" | fdisk /dev/$_disk
 
-  # TODO: Réaliser un calcul selon la taille du disque et la RAM
-  # GENERIC VM --- HDD <= 10 GB; RAM <= 2 GB
+  # Calcul selon la taille du disque et de la RAM
+  # HDD min.: 10G
+  disk_size=$(fdisk -l | awk -F " " 'NR==1 {print $3}' | cut -d"," -f 1)
+  ram_size=$(( $(free -g | awk 'NR==2 {print $2}') + 1))
+
   boot_size="512M"
-  swap_size="2G"
   root_size="2G"
-  var_size="2G"
   data_size=""
+
+  if [[ $ram_size -ge 4 ]]; then
+    swap_size="4G"
+  else
+    swap_size="${ram_size}G"
+  fi
+
+  if [[ $disk_size -ge 15 ]]; then
+    var_size="4G"
+  else
+    var_size="2G"
+  fi
 
   # TODO: Vérifier si le filesystem ext4 correspond à l'utilisation des partitions / Voir ZFS
   # https://wiki.archlinux.org/index.php/file_systems
   # https://wiki.archlinux.org/index.php/Installing_Arch_Linux_on_ZFS
 
   # BOOT on /dev/xxx1
-  echo -e "\n==> /boot partition size => default: 512M "
+  echo -e "\n$yellow==>$nc /boot partition size => $boot_size"
   echo -e "Creating boot /dev/$_disk${part_order[1]} [$boot_size]..."
   printf "n\n$part_primary\n\n+$boot_size\nw" | fdisk /dev/$_disk
   yes | mkfs.$boot_filesystem /dev/$_disk${part_order[1]}
 
   # SWAP on /dev/xxx2
-  echo -e "\n==> swap partition size => default: 2G "
+  echo -e "\n$yellow==>$nc swap partition size => $swap_size"
   echo -e "Creating swap /dev/$_disk${part_order[2]} [$swap_size]..."
   printf "n\n$part_primary\n\n+$swap_size\nw" | fdisk /dev/$_disk
   yes | mkswap /dev/$_disk${part_order[2]}
 
   # ROOT on /dev/xxx3
-  echo -e "\n==> root partition size => default: 1G "
+  echo -e "\n$yellow==>$nc root partition size => $root_size"
   echo -e "Creating root /dev/$_disk${part_order[3]} [$root_size]..."
   printf "n\n$part_primary\n\n+$root_size\nw" | fdisk /dev/$_disk
   yes | mkfs.ext4 /dev/$_disk${part_order[3]}
 
   # EXTENDED PARTITION /dev/xxx4
-  echo -e "Creating extended partition on /dev/$_disk${part_order[4]} ..."
+  echo -e "\n$yellow==>$nc Creating extended partition on /dev/$_disk${part_order[4]}..."
   printf "n\n$part_extended\n\n\nw" | fdisk /dev/$_disk
 
   # VAR on /dev/xxx5
-  echo -e "\n==> /var partition size => default: 2G "
+  echo -e "\n$yellow==>$nc /var partition size => $var_size"
   echo -e "Creating var /dev/$_disk${part_order[5]} [$var_size]..."
   printf "n\n\n+$var_size\nw" | fdisk /dev/$_disk
   yes | mkfs.ext4 /dev/$_disk${part_order[5]}
@@ -124,7 +137,7 @@ _disk_part() {
   # TMP TODO: Already created by systemd as a tmpfs, check how to configure it.
 
   # DATA on /dev/xxx6
-  echo -e "\n==> /data partition will use all free space "
+  echo -e "\n$yellow==>$nc /data partition will use all free space"
   echo -e "Creating /data /dev/$_disk${part_order[6]}..."
   printf "n\n\n$data_size\nw" | fdisk /dev/$_disk
   yes | mkfs.ext4 /dev/$_disk${part_order[6]}
@@ -134,7 +147,7 @@ _disk_part() {
 ## MOUNTiNG PARTiTiON ##
 ########################
 _mount_part() {
-  echo -e "Mounting partitions & activate swap..."
+  echo -e "\n$green==>$nc Mounting partitions & activating swap..."
   mount /dev/$_disk${part_order[3]} /mnt
   mkdir /mnt/{boot,var,data}
   if [[ "$FIRMWARE" == "UEFI" ]]; then
@@ -153,21 +166,21 @@ _mount_part() {
 ####################
 _install_system() {
   # Export root
-  echo -e "\n==> Exporting root partition... "
+  echo -e "$green==>$nc Exporting root partition..."
   time cp -ax / /mnt
 
   # Export kernel
-  echo -e "\n==> Exporting kernel... "
+  echo -e "\n$green==>$nc Exporting kernel..."
   cp -vaT /run/archiso/bootmnt/arch/boot/$(uname -m)/vmlinuz /mnt/boot/vmlinuz-linux
 
   # Generate fstab
-  echo -e "\n==> Generating fstab... "
+  echo -e "\n$green==>$nc Generating fstab..."
   genfstab -U -p /mnt >> /mnt/etc/fstab
 
   # Chroot into
-  echo -e "\n==> General Configuration... "
-  arch-chroot /mnt /bin/bash <<EOF
+  echo -e "\n$green==>$nc General Configuration..."
 
+  arch-chroot /mnt /bin/bash <<EOF
   # Disable archiso services
   systemctl disable pacman-init.service choose-mirror.service
   rm -r /etc/systemd/system/{choose-mirror.service,pacman-init.service,etc-pacman.d-gnupg.mount,getty@tty1.service.d}
@@ -184,31 +197,31 @@ _install_system() {
   # Basic Configuration
 
   # Create users
-  echo -e "==> Setting root password... "
+  echo -e "\n${yellow}==>${nc} Setting root password..."
   echo "root:${ROOT_passwd}" | chpasswd
-  echo -e "==> Setting admin user password... "
+  echo -e "\n${yellow}==>${nc} Setting admin user password..."
   groupadd admin
   useradd -g admin -G wheel admin
   echo "admin:${ADMIN_passwd}" | chpasswd
-  echo -e "==> Setting cloudhook user password... "
+  echo -e "\n${yellow}==>${nc} Setting cloudhook user password..."
   groupadd cloudhook
   useradd -g cloudhook cloudhook
   echo "cloudhook:${CLOUDHOOK_passwd}" | chpasswd
 
-  echo -e "==> Setting hostname... "
+  echo -e "\n${yellow}==>${nc} Setting hostname... "
   echo $HOST_name > /etc/hostname
 
-  echo -e "==> Setting and generating locale... "
+  echo -e "\n${yellow}==>${nc} Setting and generating locale... "
   locale-gen
 
-  echo -e "==> Setting keyboard... "
+  echo -e "\n${yellow}==>${nc} Setting keyboard... "
   echo "KEYMAP=${KEYMAP}" > /etc/vconsole.conf
 
-  echo -e "==> Setting timezone... "
-  ln -s /usr/share/zoneinfo/UTC /etc/localtime
+  echo -e "\n${yellow}==>${nc} Setting timezone... "
+  ln -sf /usr/share/zoneinfo/UTC /etc/localtime
 
   # initramfs
-  echo -e "==> Setting Linux environment... "
+  echo -e "\n${yellow}==>${nc} Setting Linux environment... "
   mkinitcpio -p linux
 
   #Enable basic services
@@ -221,7 +234,7 @@ EOF
 ## BOOTLOADER iNSTALL ##
 ########################
 _install_bootloader() {
-  echo -e "Installating $FIRMWARE Boot Loader..."
+  echo -e "\n$green==>$nc Installating $FIRMWARE Boot Loader..."
   if [[ "$FIRMWARE" == "UEFI" ]]; then
     arch-chroot /mnt /bin/bash <<EOF
     # TODO: Le cas doit être géré !
@@ -238,10 +251,10 @@ EOF
 ## 10-network.rules generation ##
 #################################
 _configure_network_devices() {
-  echo -e "Configuring network udev rules..."
+  echo -e "\n$green==>$nc Configuring network udev rules..."
 
   arch-chroot /mnt /bin/bash <<\EOF
-  devname=($(ls /sys/class/net))
+  devname=($(ls -v /sys/class/net))
   devname=(${devname[@]/lo})
 
   for (( i = 0; i < ${#devname[@]}; i++ ))
@@ -262,35 +275,48 @@ EOF
 ## POSTGRESQL iNSTALL ##
 ########################
 _install_postgresql() {
-  echo -e "PostgreSQL cluster initialization..." && sleep 2s
+  echo -e "\n$green==>$nc Installing PostgreSQL..."
+
   arch-chroot /mnt /bin/bash <<EOF
-  # Setting up cluster
+  echo -e "\n${yellow}==>${nc} Initializing cluster..."
+  # Set up cluster
   mkdir -p /data/postgres/data
   chown -R postgres:postgres /data/postgres/
   su - postgres -c 'initdb --locale en_US.UTF-8 -E UTF8 -D '/data/postgres/data''
-
-  # Boot Startup service
-  systemctl enable postgresql.service
+  if [[ \$? -eq 0 ]]; then
+    echo -e "\n${green}==> PostgreSQL service initialized successfully.${nc}"
+  else
+    echo -e "\n${red}==> PostgreSQL service failed to initialize.${nc}"
+  fi
 
   # Start process in /run/
+  echo -e "\n${yellow}==>${nc} Starting PostgreSQL..." && sleep 2
   mkdir /run/postgresql
   chown postgres:postgres /run/postgresql
   su - postgres -c '/usr/bin/pg_ctl -D /data/postgres/data start'
-  if [[ $? -eq 0 ]]; then
-    echo -e "PostgreSQL service started successfully."
+  if [[ \$? -eq 0 ]]; then
+    echo -e "\n${green}==> PostgreSQL service started successfully.${nc}"
   else
-    echo -e "PostgreSQL service failed to start."
+    echo -e "\n${red}==> PostgreSQL service failed to start.${nc}"
   fi
 
   # Restore SQL Dump file
-  echo -e "PostgreSQL dump restoration..." && sleep 2s
+  echo -e "\n${yellow}==>${nc} Restoring PostgreSQL database dump..." && sleep 2
   createdb cloudhook -U postgres
-  psql cloudhook < /srv/database/database.sql -U postgres --set ON_ERROR_STOP=on
-  if [[ $? -eq 3 ]]; then
-    echo -e "PostgreSQL database dump failed to restore, operation aborted."
-  elif [[ $? -eq 0 ]]; then
-    echo -e "PostgreSQL database dump restored successfully."
+  if [[ \$? -eq 0 ]]; then
+    psql cloudhook < /srv/database/cloudhook.sql -U postgres --set ON_ERROR_STOP=on
+    if [[ \$? -eq 3 ]]; then
+      echo -e "\n${red}==> PostgreSQL database dump failed to restore, operation aborted.${nc}"
+    elif [[ \$? -eq 0 ]]; then
+      echo -e "\n${green}==> PostgreSQL database dump restored successfully.${nc}"
+    fi
+  else
+    echo -e "\n${red}==> Failed to create PostgreSQL database.${nc}"
   fi
+
+  # Enable service at boot
+  echo -e "\n${yellow}==>${nc} Enabling PostgreSQL service..."
+  systemctl enable postgresql.service
 EOF
 }
 
@@ -298,13 +324,14 @@ EOF
 ## NODEJS APP iNSTALL ##
 ########################
 _install_app() {
+  # TODO: Réaliser l'extraction des modules nodejs et autre ...
+  echo -e "\n$green==>$nc Installing Cloudhook..."
+  # TODO: Actuellement, c'est une copie complète du dépôt Github qui est faite.
+  echo -e "\n$yellow==>$nc Enabling Web services... "
   arch-chroot /mnt /bin/bash <<EOF
   systemctl enable cloudhook.service
   systemctl enable nginx.service
 EOF
-  # TODO: Réaliser l'extraction des modules nodejs et autre ...
-  echo -e "cloudhook installation..." && sleep 2s
-  # TODO: Actuellement, c'est une copie complète du dépôt Github qui est faite.
 }
 
 ######################
@@ -324,19 +351,20 @@ _disk_part
 _mount_part
 
 if [ $? -eq 0 ]; then
-  echo "System is ready for installation"
+  echo -e "\n$green==> System is ready for installation !$nc"
   (_install_system && _install_bootloader && _configure_network_devices && _install_postgresql && _install_app) 2>&1 | tee -a $LOGFILE
-  echo -e "$green==>$red App installation report: $nc"
+  echo -e "$green==>$yellow Installation report:$nc"
   cat $LOGFILE | grep "error" >/dev/null 2>&1
   if [[ $? -eq 0 ]]; then
     cat $LOGFILE | grep "error"
   else
-    echo "Installation finished. No error reported."
+    echo "\n$green No error reported.$nc"
   fi
+  mv $LOGFILE /mnt/var/log/
 else
   echo -e $part_error
   exit
 fi
 
-echo -e "Unmounting partition and Rebooting ..."
+echo -e "\n$yellow==> Unmounting partition and Rebooting...$nc"
 umount -R /mnt && reboot

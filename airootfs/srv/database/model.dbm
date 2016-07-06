@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.8.2-beta1" author="bouren_n" last-position="0,0" last-zoom="0.8"
+<dbmodel pgmodeler-ver="0.8.2" author="bouren_n" last-position="0,0" last-zoom="0.8"
 	 default-schema="public" default-owner="root">
 <role name="root"
       superuser="true"
@@ -12,7 +12,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
       inherit="true"
       login="true"
       encrypted="true"
-      password="etna42">
+      password="cloudhook">
 	<roles names="postgres" role-type="refer" />
 </role>
 
@@ -773,11 +773,8 @@ public.azr_storage_containers;]]></expression>
 	</return-type>
 	<definition><![CDATA[BEGIN
 UPDATE aws_storage_objects
-SET object_ub = object_ub + 2
-WHERE object_ub >= NEW.object_lb;
-UPDATE aws_storage_objects
-SET object_lb = object_lb + 2
-WHERE object_lb >= NEW.object_lb;
+SET object_position = int4range(lower(object_position), upper(object_position) + 2, '[)')
+WHERE upper(object_position) > lower(NEW.object_position);
 RETURN NEW;
 END;]]></definition>
 </function>
@@ -799,11 +796,8 @@ END;]]></definition>
 	</return-type>
 	<definition><![CDATA[BEGIN
 UPDATE aws_storage_objects
-SET object_lb = object_lb - 2
-WHERE object_lb >= OLD.object_lb;
-UPDATE aws_storage_objects
-SET object_ub = object_ub - 2
-WHERE object_ub >= OLD.object_lb;
+SET object_position = int4range(lower(object_position), upper(object_position) + 2, '[)')
+WHERE upper(object_position) > lower(NEW.object_position);
 RETURN NEW;
 END;]]></definition>
 </function>

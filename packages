@@ -1,7 +1,6 @@
 ##Core##
 arch-install-scripts
 dosfstools
-#parted
 
 ##Usefull##
 openssh
@@ -12,14 +11,13 @@ sudo
 tcpdump
 nmap
 wget
-#dnsutils
-dhclient
 dialog
 mg
 
 ##Cloudhook##
-postgresql
 nodejs
+npm
+postgresql
 nginx
 
 ##Testing##
