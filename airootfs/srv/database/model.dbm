@@ -99,12 +99,12 @@ INSERT INTO public.aws_storage_objects (name,description,storage_class,type,size
 <table name="users" oids="true">
 	<schema name="public"/>
 	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.users (login,password,description,fname,lname,email) VALUES ('admin','admin','System Admin User','','','');
-INSERT INTO public.users (login,password,description,fname,lname,email) VALUES ('toto','toto','toto','to','to','toto@toto');
-INSERT INTO public.users (login,password,description,fname,lname,email) VALUES ('tata','tata','tata','ta','ta','tata@tata');
-INSERT INTO public.users (login,password,description,fname,lname,email) VALUES ('titi','titi','titi','ti','ti','titi@titi');
-INSERT INTO public.users (login,password,description,fname,lname,email) VALUES ('tutu','tutu','tutu','tu','tu','tutu@tutu');]]></appended-sql>
-	<position x="496.5" y="49.5"/>
+	<appended-sql><![CDATA[INSERT INTO public.users (login,password,description,fname,lname,email,aws_account_id,azr_account_id) VALUES ('admin','admin','System Admin User','','','','1','1');
+INSERT INTO public.users (login,password,description,fname,lname,email,aws_account_id,azr_account_id) VALUES ('toto','toto','toto','to','to','toto@toto','1','1');
+INSERT INTO public.users (login,password,description,fname,lname,email,aws_account_id,azr_account_id) VALUES ('tata','tata','tata','ta','ta','tata@tata','1','1');
+INSERT INTO public.users (login,password,description,fname,lname,email,aws_account_id,azr_account_id) VALUES ('titi','titi','titi','ti','ti','titi@titi','1','1');
+INSERT INTO public.users (login,password,description,fname,lname,email,aws_account_id,azr_account_id) VALUES ('tutu','tutu','tutu','tu','tu','tutu@tutu','1','1');]]></appended-sql>
+	<position x="471.019" y="23.8269"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
 	</column>
@@ -125,6 +125,12 @@ INSERT INTO public.users (login,password,description,fname,lname,email) VALUES (
 	</column>
 	<column name="lname">
 		<type name="text"/>
+	</column>
+	<column name="aws_account_id">
+		<type name="integer"/>
+	</column>
+	<column name="azr_account_id">
+		<type name="integer"/>
 	</column>
 	<constraint name="user_id" type="pk-constr" table="public.users">
 		<columns names="id" ref-type="src-columns"/>
@@ -298,8 +304,8 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 <table name="azr_accounts">
 	<schema name="public"/>
 	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.azr_accounts (login,password,azr_subscription_id,azr_storage_account_id,user_id) VALUES ('bouren_n@etna-alternance.net','secret42','680fe13a-97f0-4f03-858c-e61f151f100d','1','1');]]></appended-sql>
-	<position x="833.5" y="52"/>
+	<appended-sql><![CDATA[INSERT INTO public.azr_accounts (login,password,azr_subscription_id,azr_storage_account_id) VALUES ('bouren_n@etna-alternance.net','secret42','680fe13a-97f0-4f03-858c-e61f151f100d','1');]]></appended-sql>
+	<position x="844.269" y="30.0769"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
 	</column>
@@ -313,9 +319,6 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 		<type name="text"/>
 	</column>
 	<column name="azr_storage_account_id">
-		<type name="integer"/>
-	</column>
-	<column name="user_id">
 		<type name="integer"/>
 	</column>
 	<constraint name="azr_account_id" type="pk-constr" table="public.azr_accounts">
@@ -340,8 +343,8 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 <table name="aws_accounts">
 	<schema name="public"/>
 	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.aws_accounts (login,password,type,aws_access_key_id,aws_secret_access_key_id,aws_account_id,aws_canonical_user_id,user_id) VALUES ('bouren_n@etna-alternance.net','etna42','root','AKIAIZL4Y6D4JDUPSM5A','RkNkRDBXZ8Midrc6ZnH3N5Iwz+6LIDKx7WEfE9XY','A5472-4984-3702','fa47085858ab564334ea42d468c62785f177627106af3bcfbc13cc2dfbe2e497','1');]]></appended-sql>
-	<position x="829.5" y="211"/>
+	<appended-sql><![CDATA[INSERT INTO public.aws_accounts (login,password,type,aws_access_key_id,aws_secret_access_key_id,aws_account_id,aws_canonical_user_id) VALUES ('bouren_n@etna-alternance.net','etna42','root','AKIAIZL4Y6D4JDUPSM5A','RkNkRDBXZ8Midrc6ZnH3N5Iwz+6LIDKx7WEfE9XY','A5472-4984-3702','fa47085858ab564334ea42d468c62785f177627106af3bcfbc13cc2dfbe2e497');]]></appended-sql>
+	<position x="845.75" y="224.75"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
 	</column>
@@ -366,9 +369,6 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 	<column name="aws_canonical_user_id" not-null="true">
 		<type name="text"/>
 	</column>
-	<column name="user_id">
-		<type name="integer"/>
-	</column>
 	<constraint name="aws_account_id" type="pk-constr" table="public.aws_accounts">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
@@ -382,15 +382,11 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 	<role name="root"/>
 	<position x="1766.5" y="997.75"/>
 	<reference>
-		<expression><![CDATA[SELECT
-aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_lb, aws_storage_objects.object_ub, 'aws' AS cloud_vendor
-FROM
-public.aws_storage_objects
+		<expression><![CDATA[SELECT obj.id, obj.name, obj.description, obj.storage_class, NULL AS azr_blob_type, obj.type, obj.size, obj.language, obj.md5hash, obj.metadata, obj.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, obj.container_id, obj.object_level, obj.object_lb, obj.object_ub, 'aws' AS cloud_vendor
+FROM public.aws_storage_objects AS obj
 UNION ALL
-SELECT
-azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, NULL AS storage_class, azr_storage_objects.azr_blob_type, azr_storage_objects.type, azr_storage_objects.size, azr_storage_objects.language, azr_storage_objects.md5hash, azr_storage_objects.metadata, NULL AS amz_website_redirect_location, azr_storage_objects.content_disposition, azr_storage_objects.lease_id, azr_storage_objects.lease_duration, azr_storage_objects.container_id, azr_storage_objects.object_level, azr_storage_objects.object_lb, azr_storage_objects.object_ub, 'azr' AS cloud_vendor
-FROM
-public.azr_storage_objects]]></expression>
+SELECT obj.id, obj.name, obj.description, NULL AS storage_class, obj.azr_blob_type, obj.type, obj.size, obj.language, obj.md5hash, obj.metadata, NULL AS amz_website_redirect_location, obj.content_disposition, obj.lease_id, obj.lease_duration, obj.container_id, obj.object_level, obj.object_lb, obj.object_ub, 'azr' AS cloud_vendor
+FROM public.azr_storage_objects AS obj]]></expression>
 	</reference>
 </view>
 
@@ -473,17 +469,17 @@ INSERT INTO public.permissions (read,write,delete,read_permission,write_permissi
 <view name="accounts">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="1758.25" y="93.75"/>
+	<position x="1754.5" y="93.75"/>
 	<reference>
 		<expression><![CDATA[SELECT
-aws_accounts.id, aws_accounts.login, aws_accounts.password, aws_accounts.type, aws_accounts.aws_access_key_id, aws_accounts.aws_secret_access_key_id, aws_accounts.aws_account_id AS account_id, aws_accounts.aws_canonical_user_id,  NULL AS azr_storage_account_id, aws_accounts.user_id,'aws' AS cloud_vendor
-FROM
-public.aws_accounts
+aws.id, aws.login, aws.password, aws.type, aws.aws_access_key_id, aws.aws_secret_access_key_id, aws.aws_account_id AS account_id, aws.aws_canonical_user_id, NULL AS azr_subscription_id,  NULL AS azr_storage_account_id, u.id AS user_id,'aws' AS cloud_vendor
+FROM public.aws_accounts AS aws
+LEFT JOIN users AS u ON aws.id = u.aws_account_id
 UNION ALL
 SELECT
-azr_accounts.id, azr_accounts.login, azr_accounts.password, NULL AS type, NULL AS aws_access_key_id, NULL AS aws_secret_access_key_id, azr_accounts.azr_subscription_id AS account_id, NULL AS aws_canonical_user_id, azr_accounts.azr_storage_account_id, azr_accounts.user_id, 'azr' AS cloud_vendor
-FROM 
-public.azr_accounts;]]></expression>
+azr.id, azr.login, azr.password, NULL AS type, NULL AS aws_access_key_id, NULL AS aws_secret_access_key_id, NULL AS account_id, NULL AS aws_canonical_user_id, azr.azr_subscription_id, azr.azr_storage_account_id, u.id AS user_id, 'azr' AS cloud_vendor
+FROM public.azr_accounts AS azr
+LEFT JOIN users AS u ON azr.id = u.azr_account_id]]></expression>
 	</reference>
 </view>
 
@@ -544,15 +540,11 @@ INSERT INTO public.aws_storages (id,name,description,aws_account_id) VALUES ('13
 	<role name="root"/>
 	<position x="1767" y="631.75"/>
 	<reference>
-		<expression><![CDATA[SELECT
-aws_storages.id, aws_storages.name, aws_storages.description, aws_storages.aws_account_id AS owner_account_id, 'aws' AS cloud_vendor
-FROM
-public.aws_storages
+		<expression><![CDATA[SELECT str.id, str.name, str.description, str.aws_account_id AS owner_account_id, 'aws' AS cloud_vendor
+FROM public.aws_storages AS str
 UNION ALL
-SELECT
-azr_storages.id, azr_storages.name, azr_storages.description, azr_storages.azr_storage_account_id AS owner_account_id, 'azr' AS cloud_vendor
-FROM 
-public.azr_storages;]]></expression>
+SELECT str.id, str.name, str.description, str.azr_storage_account_id AS owner_account_id, 'azr' AS cloud_vendor
+FROM public.azr_storages AS str]]></expression>
 	</reference>
 </view>
 
@@ -561,19 +553,13 @@ public.azr_storages;]]></expression>
 	<role name="root"/>
 	<position x="1764.5" y="891.5"/>
 	<reference>
-		<expression><![CDATA[SELECT
-aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_lb, aws_storage_objects.object_ub, 'aws' AS cloud_vendor
-FROM
-public.aws_storage_objects
-WHERE
-type = 'folder'
+		<expression><![CDATA[SELECT obj.id, obj.name, obj.description, obj.storage_class, NULL AS azr_blob_type, obj.type, obj.size, obj.language, obj.md5hash, obj.metadata, obj.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, obj.container_id, obj.object_level, obj.object_lb, obj.object_ub, 'aws' AS cloud_vendor
+FROM public.aws_storage_objects AS obj
+WHERE type = 'folder'
 UNION ALL
-SELECT
-azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, NULL AS storage_class, azr_storage_objects.azr_blob_type, azr_storage_objects.type, azr_storage_objects.size, azr_storage_objects.language, azr_storage_objects.md5hash, azr_storage_objects.metadata, NULL AS amz_website_redirect_location, azr_storage_objects.content_disposition, azr_storage_objects.lease_id, azr_storage_objects.lease_duration, azr_storage_objects.container_id, azr_storage_objects.object_level, azr_storage_objects.object_lb, azr_storage_objects.object_ub, 'azr' AS cloud_vendor
-FROM
-public.azr_storage_objects
-WHERE
-type = 'folder']]></expression>
+SELECT obj.id, obj.name, obj.description, NULL AS storage_class, obj.azr_blob_type, obj.type, obj.size, obj.language, obj.md5hash, obj.metadata, NULL AS amz_website_redirect_location, obj.content_disposition, obj.lease_id, obj.lease_duration, obj.container_id, obj.object_level, obj.object_lb, obj.object_ub, 'azr' AS cloud_vendor
+FROM public.azr_storage_objects AS obj
+WHERE type = 'folder']]></expression>
 	</reference>
 </view>
 
@@ -663,15 +649,11 @@ VALUES ('mon3Bucket','Mon tout premier',CURRENT_TIMESTAMP,'private','STANDARD','
 	<role name="root"/>
 	<position x="1762.5" y="790"/>
 	<reference>
-		<expression><![CDATA[SELECT
-aws_storage_containers.id, aws_storage_containers.name, aws_storage_containers.description, aws_storage_containers.creation_date, aws_storage_containers.acl, aws_storage_containers.storage_class, aws_storage_containers.region, aws_storage_containers.size, aws_storage_containers.cache_control, aws_storage_containers.cache_disposition, aws_storage_containers.cache_encoding, aws_storage_containers.expect, aws_storage_containers.request_payment, aws_storage_containers.versionning, aws_storage_containers.lifecycle_configuration, aws_storage_containers.policy_configuration, aws_storage_containers.notification_configuration, aws_storage_containers.logging_configuration, aws_storage_containers.xregion_replication, aws_storage_containers.tags, NULL AS metadata, aws_storage_containers.storage_id, 'aws' AS cloud_vendor
-FROM
-public.aws_storage_containers
+		<expression><![CDATA[SELECT con.id, con.name, con.description, con.creation_date, con.acl, con.storage_class, con.region, con.size, con.cache_control, con.cache_disposition, con.cache_encoding, con.expect, con.request_payment, con.versionning, con.lifecycle_configuration, con.policy_configuration, con.notification_configuration, con.logging_configuration, con.xregion_replication, con.tags, NULL AS metadata, con.storage_id, 'aws' AS cloud_vendor
+FROM public.aws_storage_containers AS con
 UNION ALL
-SELECT
-azr_storage_containers.id, azr_storage_containers.name, azr_storage_containers.description, NULL AS creation_date, NULL AS acl, NULL AS storage_class, NULL AS region, NULL AS size, azr_storage_containers.cache_control, azr_storage_containers.cache_disposition, azr_storage_containers.cache_encoding, azr_storage_containers.expect, NULL AS request_payment, NULL AS versionning, NULL AS lifecycle_configuration, NULL AS policy_configuration, NULL AS notification_configuration, NULL AS logging_configuration, NULL AS xregion_replication, NULL AS tags, azr_storage_containers.metadata, azr_storage_containers.storage_id, 'azr' AS cloud_vendor
-FROM 
-public.azr_storage_containers;]]></expression>
+SELECT con.id, con.name, con.description, NULL AS creation_date, NULL AS acl, NULL AS storage_class, NULL AS region, NULL AS size, con.cache_control, con.cache_disposition, con.cache_encoding, con.expect, NULL AS request_payment, NULL AS versionning, NULL AS lifecycle_configuration, NULL AS policy_configuration, NULL AS notification_configuration, NULL AS logging_configuration, NULL AS xregion_replication, NULL AS tags, con.metadata, con.storage_id, 'azr' AS cloud_vendor
+FROM public.azr_storage_containers AS con]]></expression>
 	</reference>
 </view>
 
@@ -938,65 +920,77 @@ INSERT INTO public.link_permissions_aws_storages (group_id, resource_id, permiss
 <view name="resources">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="1762.5" y="438.75"/>
+	<position x="1762.5" y="437.5"/>
 	<reference>
-		<expression><![CDATA[SELECT 'aws_storages' AS resource_table, 'storage' AS resource_type, aws_storages.id, aws_storages.name, aws_storages.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM aws_storages
-LEFT JOIN link_permissions_aws_storages AS l ON aws_storages.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+		<expression><![CDATA[SELECT 'aws_storages' AS resource_table, 'storage' AS resource_type, str.id, str.name, str.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM aws_storages AS str
+LEFT JOIN link_permissions_aws_storages AS l ON str.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
 UNION ALL
-SELECT 'azr_storages' AS resource_table, 'storage' AS resource_type, azr_storages.id, azr_storages.name, azr_storages.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM azr_storages
-LEFT JOIN link_permissions_azr_storages AS l ON azr_storages.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'azr_storages' AS resource_table, 'storage' AS resource_type, str.id, str.name, str.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM azr_storages AS str
+LEFT JOIN link_permissions_azr_storages AS l ON str.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
 UNION ALL
-SELECT 'aws_storage_containers' AS resource_table, 'container' AS resource_type, aws_storage_containers.id, aws_storage_containers.name, aws_storage_containers.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM aws_storage_containers
-LEFT JOIN link_permissions_aws_storage_containers AS l ON aws_storage_containers.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'aws_storage_containers' AS resource_table, 'container' AS resource_type, con.id, con.name, con.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM aws_storage_containers AS con
+LEFT JOIN link_permissions_aws_storage_containers AS l ON con.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
 UNION ALL
-SELECT 'azr_storage_containers' AS resource_table, 'container' AS resource_type, azr_storage_containers.id, azr_storage_containers.name, azr_storage_containers.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM azr_storage_containers
-LEFT JOIN link_permissions_azr_storage_containers AS l ON azr_storage_containers.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'azr_storage_containers' AS resource_table, 'container' AS resource_type, con.id, con.name, con.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM azr_storage_containers AS con
+LEFT JOIN link_permissions_azr_storage_containers AS l ON con.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
 UNION ALL
-SELECT 'aws_storage_objects' AS resource_table, 'folder' AS resource_type,  aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM aws_storage_objects
-LEFT JOIN link_permissions_aws_storage_objects AS l ON aws_storage_objects.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'aws_storage_objects' AS resource_table, 'folder' AS resource_type,  obj.id, obj.name, obj.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM aws_storage_objects AS obj
+LEFT JOIN link_permissions_aws_storage_objects AS l ON obj.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
-AND aws_storage_objects.type = 'folder'
+WHERE obj.type = 'folder'
 UNION ALL
-SELECT'azr_storage_objects' AS resource_table, 'folder' AS resource_type,  azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM azr_storage_objects
-LEFT JOIN link_permissions_azr_storage_objects AS l ON azr_storage_objects.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT'azr_storage_objects' AS resource_table, 'folder' AS resource_type,  obj.id, obj.name, obj.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM azr_storage_objects AS obj
+LEFT JOIN link_permissions_azr_storage_objects AS l ON obj.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
-AND azr_storage_objects.type = 'folder'
+WHERE obj.type = 'folder'
 UNION ALL
-SELECT 'aws_storage_objects' AS resource_table, 'file' AS resource_type, aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM aws_storage_objects
-LEFT JOIN link_permissions_aws_storage_objects AS l ON aws_storage_objects.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'aws_storage_objects' AS resource_table, 'file' AS resource_type, obj.id, obj.name, obj.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM aws_storage_objects AS obj
+LEFT JOIN link_permissions_aws_storage_objects AS l ON obj.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
-AND  aws_storage_objects.type != 'folder'
+WHERE  obj.type != 'folder'
 UNION ALL
-SELECT 'azr_storage_objects' AS resource_table, 'file' AS resource_type,  azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM azr_storage_objects
-LEFT JOIN link_permissions_azr_storage_objects AS l ON azr_storage_objects.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'azr_storage_objects' AS resource_table, 'file' AS resource_type,  obj.id, obj.name, obj.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM azr_storage_objects AS obj
+LEFT JOIN link_permissions_azr_storage_objects AS l ON obj.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
-AND azr_storage_objects.type != 'folder']]></expression>
+WHERE obj.type != 'folder']]></expression>
 	</reference>
 </view>
 
 <constraint name="aws_storage_container_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storage_containers" table="public.aws_storage_objects">
 	<columns names="container_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="aws_account_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="SET NULL" ref-table="public.aws_accounts" table="public.users">
+	<columns names="aws_account_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="azr_account_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="SET NULL" ref-table="public.azr_accounts" table="public.users">
+	<columns names="azr_account_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
@@ -1012,21 +1006,9 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
-<constraint name="user_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="SET NULL" ref-table="public.users" table="public.azr_accounts">
-	<columns names="user_id" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
-
 <constraint name="azr_storage_account_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="SET NULL" ref-table="public.azr_storage_accounts" table="public.azr_accounts">
 	<columns names="azr_storage_account_id" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
-
-<constraint name="user_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="CASCADE" del-action="SET NULL" ref-table="public.users" table="public.aws_accounts">
-	<columns names="user_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
@@ -1192,12 +1174,7 @@ AND azr_storage_objects.type != 'folder']]></expression>
 <relationship name="rel_cloud_accounts_azr_storage_accounts" type="relfk"
 	 src-table="public.azr_accounts"
 	 dst-table="public.azr_storage_accounts"
-	 src-required="false" dst-required="false">
-	<line>
-		<position x="1171.82" y="136.6"/>
-	<position x="1171.82" y="69.1"/>
-	</line>
-</relationship>
+	 src-required="false" dst-required="false"/>
 
 <relationship name="rel_link_groups_users_groups" type="relfk"
 	 src-table="public.link_groups_users"
@@ -1211,7 +1188,11 @@ AND azr_storage_objects.type != 'folder']]></expression>
 <relationship name="rel_link_groups_users_users" type="relfk"
 	 src-table="public.link_groups_users"
 	 dst-table="public.users"
-	 src-required="false" dst-required="false"/>
+	 src-required="false" dst-required="false">
+	<line>
+		<position x="245.45" y="52.4269"/>
+	</line>
+</relationship>
 
 <relationship name="rel_aws_storage_containers_aws_storage" type="relfk"
 	 src-table="public.aws_storage_containers"
@@ -1277,24 +1258,6 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	<line>
 		<position x="1328.65" y="950.85"/>
 	<position x="1328.65" y="782.35"/>
-	</line>
-</relationship>
-
-<relationship name="rel_aws_accounts_users" type="relfk"
-	 src-table="public.aws_accounts"
-	 dst-table="public.users"
-	 src-required="false" dst-required="false">
-	<line>
-		<position x="810" y="78.1"/>
-	</line>
-</relationship>
-
-<relationship name="rel_azr_accounts_users" type="relfk"
-	 src-table="public.azr_accounts"
-	 dst-table="public.users"
-	 src-required="false" dst-required="false">
-	<line>
-		<position x="709.138" y="150.6"/>
 	</line>
 </relationship>
 
@@ -1461,5 +1424,15 @@ AND azr_storage_objects.type != 'folder']]></expression>
 		<position x="353" y="198.35"/>
 	</line>
 </relationship>
+
+<relationship name="rel_users_aws_accounts" type="relfk"
+	 src-table="public.users"
+	 dst-table="public.aws_accounts"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_users_azr_accounts" type="relfk"
+	 src-table="public.users"
+	 dst-table="public.azr_accounts"
+	 src-required="false" dst-required="false"/>
 
 </dbmodel>

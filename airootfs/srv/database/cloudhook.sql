@@ -80,6 +80,8 @@ CREATE TABLE public.users(
 	email text,
 	fname text,
 	lname text,
+	aws_account_id integer,
+	azr_account_id integer,
 	CONSTRAINT user_id PRIMARY KEY (id),
 	CONSTRAINT unique_user_login UNIQUE (login)
 
@@ -89,11 +91,11 @@ ALTER TABLE public.users OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.users (login,password,description,fname,lname,email) VALUES ('admin','admin','System Admin User','','','');
-INSERT INTO public.users (login,password,description,fname,lname,email) VALUES ('toto','toto','toto','to','to','toto@toto');
-INSERT INTO public.users (login,password,description,fname,lname,email) VALUES ('tata','tata','tata','ta','ta','tata@tata');
-INSERT INTO public.users (login,password,description,fname,lname,email) VALUES ('titi','titi','titi','ti','ti','titi@titi');
-INSERT INTO public.users (login,password,description,fname,lname,email) VALUES ('tutu','tutu','tutu','tu','tu','tutu@tutu');
+INSERT INTO public.users (login,password,description,fname,lname,email,aws_account_id,azr_account_id) VALUES ('admin','admin','System Admin User','','','','1','1');
+INSERT INTO public.users (login,password,description,fname,lname,email,aws_account_id,azr_account_id) VALUES ('toto','toto','toto','to','to','toto@toto','1','1');
+INSERT INTO public.users (login,password,description,fname,lname,email,aws_account_id,azr_account_id) VALUES ('tata','tata','tata','ta','ta','tata@tata','1','1');
+INSERT INTO public.users (login,password,description,fname,lname,email,aws_account_id,azr_account_id) VALUES ('titi','titi','titi','ti','ti','titi@titi','1','1');
+INSERT INTO public.users (login,password,description,fname,lname,email,aws_account_id,azr_account_id) VALUES ('tutu','tutu','tutu','tu','tu','tutu@tutu','1','1');
 -- ddl-end --
 
 -- object: public.cloud_vendor_type | type: TYPE --
@@ -197,7 +199,6 @@ CREATE TABLE public.azr_accounts(
 	password text NOT NULL,
 	azr_subscription_id text NOT NULL,
 	azr_storage_account_id integer,
-	user_id integer,
 	CONSTRAINT azr_account_id PRIMARY KEY (id),
 	CONSTRAINT unique_azr_account_login UNIQUE (login)
 
@@ -207,7 +208,7 @@ ALTER TABLE public.azr_accounts OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.azr_accounts (login,password,azr_subscription_id,azr_storage_account_id,user_id) VALUES ('bouren_n@etna-alternance.net','secret42','680fe13a-97f0-4f03-858c-e61f151f100d','1','1');
+INSERT INTO public.azr_accounts (login,password,azr_subscription_id,azr_storage_account_id) VALUES ('bouren_n@etna-alternance.net','secret42','680fe13a-97f0-4f03-858c-e61f151f100d','1');
 -- ddl-end --
 
 -- object: public.aws_storage_acl_type | type: TYPE --
@@ -229,7 +230,6 @@ CREATE TABLE public.aws_accounts(
 	aws_secret_access_key_id text NOT NULL,
 	aws_account_id text NOT NULL,
 	aws_canonical_user_id text NOT NULL,
-	user_id integer,
 	CONSTRAINT aws_account_id PRIMARY KEY (id),
 	CONSTRAINT unique_aws_account_login UNIQUE (login)
 
@@ -239,7 +239,7 @@ ALTER TABLE public.aws_accounts OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.aws_accounts (login,password,type,aws_access_key_id,aws_secret_access_key_id,aws_account_id,aws_canonical_user_id,user_id) VALUES ('bouren_n@etna-alternance.net','etna42','root','AKIAIZL4Y6D4JDUPSM5A','RkNkRDBXZ8Midrc6ZnH3N5Iwz+6LIDKx7WEfE9XY','A5472-4984-3702','fa47085858ab564334ea42d468c62785f177627106af3bcfbc13cc2dfbe2e497','1');
+INSERT INTO public.aws_accounts (login,password,type,aws_access_key_id,aws_secret_access_key_id,aws_account_id,aws_canonical_user_id) VALUES ('bouren_n@etna-alternance.net','etna42','root','AKIAIZL4Y6D4JDUPSM5A','RkNkRDBXZ8Midrc6ZnH3N5Iwz+6LIDKx7WEfE9XY','A5472-4984-3702','fa47085858ab564334ea42d468c62785f177627106af3bcfbc13cc2dfbe2e497');
 -- ddl-end --
 
 -- object: public.storage_objects | type: VIEW --
@@ -247,15 +247,11 @@ INSERT INTO public.aws_accounts (login,password,type,aws_access_key_id,aws_secre
 CREATE VIEW public.storage_objects
 AS 
 
-SELECT
-aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_lb, aws_storage_objects.object_ub, 'aws' AS cloud_vendor
-FROM
-public.aws_storage_objects
+SELECT obj.id, obj.name, obj.description, obj.storage_class, NULL AS azr_blob_type, obj.type, obj.size, obj.language, obj.md5hash, obj.metadata, obj.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, obj.container_id, obj.object_level, obj.object_lb, obj.object_ub, 'aws' AS cloud_vendor
+FROM public.aws_storage_objects AS obj
 UNION ALL
-SELECT
-azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, NULL AS storage_class, azr_storage_objects.azr_blob_type, azr_storage_objects.type, azr_storage_objects.size, azr_storage_objects.language, azr_storage_objects.md5hash, azr_storage_objects.metadata, NULL AS amz_website_redirect_location, azr_storage_objects.content_disposition, azr_storage_objects.lease_id, azr_storage_objects.lease_duration, azr_storage_objects.container_id, azr_storage_objects.object_level, azr_storage_objects.object_lb, azr_storage_objects.object_ub, 'azr' AS cloud_vendor
-FROM
-public.azr_storage_objects;
+SELECT obj.id, obj.name, obj.description, NULL AS storage_class, obj.azr_blob_type, obj.type, obj.size, obj.language, obj.md5hash, obj.metadata, NULL AS amz_website_redirect_location, obj.content_disposition, obj.lease_id, obj.lease_duration, obj.container_id, obj.object_level, obj.object_lb, obj.object_ub, 'azr' AS cloud_vendor
+FROM public.azr_storage_objects AS obj;
 -- ddl-end --
 ALTER VIEW public.storage_objects OWNER TO root;
 -- ddl-end --
@@ -326,14 +322,14 @@ CREATE VIEW public.accounts
 AS 
 
 SELECT
-aws_accounts.id, aws_accounts.login, aws_accounts.password, aws_accounts.type, aws_accounts.aws_access_key_id, aws_accounts.aws_secret_access_key_id, aws_accounts.aws_account_id AS account_id, aws_accounts.aws_canonical_user_id,  NULL AS azr_storage_account_id, aws_accounts.user_id,'aws' AS cloud_vendor
-FROM
-public.aws_accounts
+aws.id, aws.login, aws.password, aws.type, aws.aws_access_key_id, aws.aws_secret_access_key_id, aws.aws_account_id AS account_id, aws.aws_canonical_user_id, NULL AS azr_subscription_id,  NULL AS azr_storage_account_id, u.id AS user_id,'aws' AS cloud_vendor
+FROM public.aws_accounts AS aws
+LEFT JOIN users AS u ON aws.id = u.aws_account_id
 UNION ALL
 SELECT
-azr_accounts.id, azr_accounts.login, azr_accounts.password, NULL AS type, NULL AS aws_access_key_id, NULL AS aws_secret_access_key_id, azr_accounts.azr_subscription_id AS account_id, NULL AS aws_canonical_user_id, azr_accounts.azr_storage_account_id, azr_accounts.user_id, 'azr' AS cloud_vendor
-FROM 
-public.azr_accounts;
+azr.id, azr.login, azr.password, NULL AS type, NULL AS aws_access_key_id, NULL AS aws_secret_access_key_id, NULL AS account_id, NULL AS aws_canonical_user_id, azr.azr_subscription_id, azr.azr_storage_account_id, u.id AS user_id, 'azr' AS cloud_vendor
+FROM public.azr_accounts AS azr
+LEFT JOIN users AS u ON azr.id = u.azr_account_id;
 -- ddl-end --
 ALTER VIEW public.accounts OWNER TO root;
 -- ddl-end --
@@ -383,15 +379,11 @@ INSERT INTO public.azr_storages (name,description,azr_storage_account_id) VALUES
 CREATE VIEW public.storages
 AS 
 
-SELECT
-aws_storages.id, aws_storages.name, aws_storages.description, aws_storages.aws_account_id AS owner_account_id, 'aws' AS cloud_vendor
-FROM
-public.aws_storages
+SELECT str.id, str.name, str.description, str.aws_account_id AS owner_account_id, 'aws' AS cloud_vendor
+FROM public.aws_storages AS str
 UNION ALL
-SELECT
-azr_storages.id, azr_storages.name, azr_storages.description, azr_storages.azr_storage_account_id AS owner_account_id, 'azr' AS cloud_vendor
-FROM 
-public.azr_storages;
+SELECT str.id, str.name, str.description, str.azr_storage_account_id AS owner_account_id, 'azr' AS cloud_vendor
+FROM public.azr_storages AS str;
 -- ddl-end --
 ALTER VIEW public.storages OWNER TO root;
 -- ddl-end --
@@ -401,19 +393,13 @@ ALTER VIEW public.storages OWNER TO root;
 CREATE VIEW public.storage_folders
 AS 
 
-SELECT
-aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, aws_storage_objects.storage_class, NULL AS azr_blob_type, aws_storage_objects.type, aws_storage_objects.size, aws_storage_objects.language, aws_storage_objects.md5hash, aws_storage_objects.metadata, aws_storage_objects.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, aws_storage_objects.container_id, aws_storage_objects.object_level, aws_storage_objects.object_lb, aws_storage_objects.object_ub, 'aws' AS cloud_vendor
-FROM
-public.aws_storage_objects
-WHERE
-type = 'folder'
+SELECT obj.id, obj.name, obj.description, obj.storage_class, NULL AS azr_blob_type, obj.type, obj.size, obj.language, obj.md5hash, obj.metadata, obj.amz_website_redirect_location, NULL AS content_disposition, NULL AS lease_id, NULL AS lease_duration, obj.container_id, obj.object_level, obj.object_lb, obj.object_ub, 'aws' AS cloud_vendor
+FROM public.aws_storage_objects AS obj
+WHERE type = 'folder'
 UNION ALL
-SELECT
-azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, NULL AS storage_class, azr_storage_objects.azr_blob_type, azr_storage_objects.type, azr_storage_objects.size, azr_storage_objects.language, azr_storage_objects.md5hash, azr_storage_objects.metadata, NULL AS amz_website_redirect_location, azr_storage_objects.content_disposition, azr_storage_objects.lease_id, azr_storage_objects.lease_duration, azr_storage_objects.container_id, azr_storage_objects.object_level, azr_storage_objects.object_lb, azr_storage_objects.object_ub, 'azr' AS cloud_vendor
-FROM
-public.azr_storage_objects
-WHERE
-type = 'folder';
+SELECT obj.id, obj.name, obj.description, NULL AS storage_class, obj.azr_blob_type, obj.type, obj.size, obj.language, obj.md5hash, obj.metadata, NULL AS amz_website_redirect_location, obj.content_disposition, obj.lease_id, obj.lease_duration, obj.container_id, obj.object_level, obj.object_lb, obj.object_ub, 'azr' AS cloud_vendor
+FROM public.azr_storage_objects AS obj
+WHERE type = 'folder';
 -- ddl-end --
 ALTER VIEW public.storage_folders OWNER TO root;
 -- ddl-end --
@@ -464,15 +450,11 @@ VALUES ('mon3Bucket','Mon tout premier',CURRENT_TIMESTAMP,'private','STANDARD','
 CREATE VIEW public.storage_containers
 AS 
 
-SELECT
-aws_storage_containers.id, aws_storage_containers.name, aws_storage_containers.description, aws_storage_containers.creation_date, aws_storage_containers.acl, aws_storage_containers.storage_class, aws_storage_containers.region, aws_storage_containers.size, aws_storage_containers.cache_control, aws_storage_containers.cache_disposition, aws_storage_containers.cache_encoding, aws_storage_containers.expect, aws_storage_containers.request_payment, aws_storage_containers.versionning, aws_storage_containers.lifecycle_configuration, aws_storage_containers.policy_configuration, aws_storage_containers.notification_configuration, aws_storage_containers.logging_configuration, aws_storage_containers.xregion_replication, aws_storage_containers.tags, NULL AS metadata, aws_storage_containers.storage_id, 'aws' AS cloud_vendor
-FROM
-public.aws_storage_containers
+SELECT con.id, con.name, con.description, con.creation_date, con.acl, con.storage_class, con.region, con.size, con.cache_control, con.cache_disposition, con.cache_encoding, con.expect, con.request_payment, con.versionning, con.lifecycle_configuration, con.policy_configuration, con.notification_configuration, con.logging_configuration, con.xregion_replication, con.tags, NULL AS metadata, con.storage_id, 'aws' AS cloud_vendor
+FROM public.aws_storage_containers AS con
 UNION ALL
-SELECT
-azr_storage_containers.id, azr_storage_containers.name, azr_storage_containers.description, NULL AS creation_date, NULL AS acl, NULL AS storage_class, NULL AS region, NULL AS size, azr_storage_containers.cache_control, azr_storage_containers.cache_disposition, azr_storage_containers.cache_encoding, azr_storage_containers.expect, NULL AS request_payment, NULL AS versionning, NULL AS lifecycle_configuration, NULL AS policy_configuration, NULL AS notification_configuration, NULL AS logging_configuration, NULL AS xregion_replication, NULL AS tags, azr_storage_containers.metadata, azr_storage_containers.storage_id, 'azr' AS cloud_vendor
-FROM 
-public.azr_storage_containers;
+SELECT con.id, con.name, con.description, NULL AS creation_date, NULL AS acl, NULL AS storage_class, NULL AS region, NULL AS size, con.cache_control, con.cache_disposition, con.cache_encoding, con.expect, NULL AS request_payment, NULL AS versionning, NULL AS lifecycle_configuration, NULL AS policy_configuration, NULL AS notification_configuration, NULL AS logging_configuration, NULL AS xregion_replication, NULL AS tags, con.metadata, con.storage_id, 'azr' AS cloud_vendor
+FROM public.azr_storage_containers AS con;
 -- ddl-end --
 ALTER VIEW public.storage_containers OWNER TO root;
 -- ddl-end --
@@ -679,57 +661,57 @@ ALTER TABLE public.link_permissions_azr_storage_containers OWNER TO root;
 CREATE VIEW public.resources
 AS 
 
-SELECT 'aws_storages' AS resource_table, 'storage' AS resource_type, aws_storages.id, aws_storages.name, aws_storages.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM aws_storages
-LEFT JOIN link_permissions_aws_storages AS l ON aws_storages.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'aws_storages' AS resource_table, 'storage' AS resource_type, str.id, str.name, str.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM aws_storages AS str
+LEFT JOIN link_permissions_aws_storages AS l ON str.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
 UNION ALL
-SELECT 'azr_storages' AS resource_table, 'storage' AS resource_type, azr_storages.id, azr_storages.name, azr_storages.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM azr_storages
-LEFT JOIN link_permissions_azr_storages AS l ON azr_storages.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'azr_storages' AS resource_table, 'storage' AS resource_type, str.id, str.name, str.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM azr_storages AS str
+LEFT JOIN link_permissions_azr_storages AS l ON str.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
 UNION ALL
-SELECT 'aws_storage_containers' AS resource_table, 'container' AS resource_type, aws_storage_containers.id, aws_storage_containers.name, aws_storage_containers.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM aws_storage_containers
-LEFT JOIN link_permissions_aws_storage_containers AS l ON aws_storage_containers.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'aws_storage_containers' AS resource_table, 'container' AS resource_type, con.id, con.name, con.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM aws_storage_containers AS con
+LEFT JOIN link_permissions_aws_storage_containers AS l ON con.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
 UNION ALL
-SELECT 'azr_storage_containers' AS resource_table, 'container' AS resource_type, azr_storage_containers.id, azr_storage_containers.name, azr_storage_containers.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM azr_storage_containers
-LEFT JOIN link_permissions_azr_storage_containers AS l ON azr_storage_containers.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'azr_storage_containers' AS resource_table, 'container' AS resource_type, con.id, con.name, con.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM azr_storage_containers AS con
+LEFT JOIN link_permissions_azr_storage_containers AS l ON con.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
 UNION ALL
-SELECT 'aws_storage_objects' AS resource_table, 'folder' AS resource_type,  aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM aws_storage_objects
-LEFT JOIN link_permissions_aws_storage_objects AS l ON aws_storage_objects.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'aws_storage_objects' AS resource_table, 'folder' AS resource_type,  obj.id, obj.name, obj.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM aws_storage_objects AS obj
+LEFT JOIN link_permissions_aws_storage_objects AS l ON obj.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
-AND aws_storage_objects.type = 'folder'
+WHERE obj.type = 'folder'
 UNION ALL
-SELECT'azr_storage_objects' AS resource_table, 'folder' AS resource_type,  azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM azr_storage_objects
-LEFT JOIN link_permissions_azr_storage_objects AS l ON azr_storage_objects.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT'azr_storage_objects' AS resource_table, 'folder' AS resource_type,  obj.id, obj.name, obj.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM azr_storage_objects AS obj
+LEFT JOIN link_permissions_azr_storage_objects AS l ON obj.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
-AND azr_storage_objects.type = 'folder'
+WHERE obj.type = 'folder'
 UNION ALL
-SELECT 'aws_storage_objects' AS resource_table, 'file' AS resource_type, aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM aws_storage_objects
-LEFT JOIN link_permissions_aws_storage_objects AS l ON aws_storage_objects.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'aws_storage_objects' AS resource_table, 'file' AS resource_type, obj.id, obj.name, obj.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM aws_storage_objects AS obj
+LEFT JOIN link_permissions_aws_storage_objects AS l ON obj.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
-AND  aws_storage_objects.type != 'folder'
+WHERE  obj.type != 'folder'
 UNION ALL
-SELECT 'azr_storage_objects' AS resource_table, 'file' AS resource_type,  azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
-FROM azr_storage_objects
-LEFT JOIN link_permissions_azr_storage_objects AS l ON azr_storage_objects.id = l.resource_id
-LEFT JOIN permissions ON permissions.id = l.permission_id
+SELECT 'azr_storage_objects' AS resource_table, 'file' AS resource_type,  obj.id, obj.name, obj.description, p.id AS permission_id, p.read, p.write, p.delete, p.read_permission, p.write_permission, p.delete_permission, groups.id AS group_id
+FROM azr_storage_objects AS obj
+LEFT JOIN link_permissions_azr_storage_objects AS l ON obj.id = l.resource_id
+LEFT JOIN permissions AS p ON p.id = l.permission_id
 LEFT JOIN groups ON l.group_id = groups.id
-AND azr_storage_objects.type != 'folder';
+WHERE obj.type != 'folder';
 -- ddl-end --
 ALTER VIEW public.resources OWNER TO root;
 -- ddl-end --
@@ -739,6 +721,20 @@ ALTER VIEW public.resources OWNER TO root;
 ALTER TABLE public.aws_storage_objects ADD CONSTRAINT aws_storage_container_id FOREIGN KEY (container_id)
 REFERENCES public.aws_storage_containers (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: aws_account_id | type: CONSTRAINT --
+-- ALTER TABLE public.users DROP CONSTRAINT IF EXISTS aws_account_id CASCADE;
+ALTER TABLE public.users ADD CONSTRAINT aws_account_id FOREIGN KEY (aws_account_id)
+REFERENCES public.aws_accounts (id) MATCH FULL
+ON DELETE SET NULL ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: azr_account_id | type: CONSTRAINT --
+-- ALTER TABLE public.users DROP CONSTRAINT IF EXISTS azr_account_id CASCADE;
+ALTER TABLE public.users ADD CONSTRAINT azr_account_id FOREIGN KEY (azr_account_id)
+REFERENCES public.azr_accounts (id) MATCH FULL
+ON DELETE SET NULL ON UPDATE NO ACTION;
 -- ddl-end --
 
 -- object: azr_storage_id | type: CONSTRAINT --
@@ -755,25 +751,11 @@ REFERENCES public.azr_storage_containers (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
--- object: user_id | type: CONSTRAINT --
--- ALTER TABLE public.azr_accounts DROP CONSTRAINT IF EXISTS user_id CASCADE;
-ALTER TABLE public.azr_accounts ADD CONSTRAINT user_id FOREIGN KEY (user_id)
-REFERENCES public.users (id) MATCH FULL
-ON DELETE SET NULL ON UPDATE NO ACTION;
--- ddl-end --
-
 -- object: azr_storage_account_id | type: CONSTRAINT --
 -- ALTER TABLE public.azr_accounts DROP CONSTRAINT IF EXISTS azr_storage_account_id CASCADE;
 ALTER TABLE public.azr_accounts ADD CONSTRAINT azr_storage_account_id FOREIGN KEY (azr_storage_account_id)
 REFERENCES public.azr_storage_accounts (id) MATCH FULL
 ON DELETE SET NULL ON UPDATE NO ACTION;
--- ddl-end --
-
--- object: user_id | type: CONSTRAINT --
--- ALTER TABLE public.aws_accounts DROP CONSTRAINT IF EXISTS user_id CASCADE;
-ALTER TABLE public.aws_accounts ADD CONSTRAINT user_id FOREIGN KEY (user_id)
-REFERENCES public.users (id) MATCH FULL
-ON DELETE SET NULL ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: group_id | type: CONSTRAINT --
