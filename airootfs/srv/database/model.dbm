@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.8.2" author="bouren_n" last-position="0,1" last-zoom="0.8"
+<dbmodel pgmodeler-ver="0.8.2" author="bouren_n" last-position="0,0" last-zoom="0.8"
 	 default-schema="public" default-owner="root">
 <role name="root"
       superuser="true"
@@ -141,7 +141,7 @@ INSERT INTO public.users (login,password,description,fname,lname,email) VALUES (
 </usertype>
 
 <textbox name="RBAC" font-size="9">
-	<position x="378.25" y="218"/>
+	<position x="328.25" y="134.25"/>
 	<comment><![CDATA[RBAC]]></comment>
 </textbox>
 
@@ -341,7 +341,7 @@ INSERT INTO public.azr_storage_accounts (signature,name,description,label,locati
 	<schema name="public"/>
 	<role name="root"/>
 	<appended-sql><![CDATA[INSERT INTO public.aws_accounts (login,password,type,aws_access_key_id,aws_secret_access_key_id,aws_account_id,aws_canonical_user_id,user_id) VALUES ('bouren_n@etna-alternance.net','etna42','root','AKIAIZL4Y6D4JDUPSM5A','RkNkRDBXZ8Midrc6ZnH3N5Iwz+6LIDKx7WEfE9XY','A5472-4984-3702','fa47085858ab564334ea42d468c62785f177627106af3bcfbc13cc2dfbe2e497','1');]]></appended-sql>
-	<position x="863.25" y="319.75"/>
+	<position x="829.5" y="211"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
 	</column>
@@ -400,7 +400,7 @@ public.azr_storage_objects]]></expression>
 	<appended-sql><![CDATA[INSERT INTO public.groups (name,description,type) VALUES ('sys-admin','Super Administrators Group','Storage');
 INSERT INTO public.groups (name,description,type) VALUES ('str-admin','Storage Administration Group','Storage');
 INSERT INTO public.groups (name,description,type) VALUES ('net-admin','Network Administration Group','Storage');]]></appended-sql>
-	<position x="498.75" y="219.75"/>
+	<position x="28.75" y="169.75"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
 	</column>
@@ -443,7 +443,7 @@ INSERT INTO public.groups (name,description,type) VALUES ('net-admin','Network A
 	<appended-sql><![CDATA[INSERT INTO public.permissions (read,write,delete,read_permission,write_permission,delete_permission) VALUES ('1','1','1','0','0','0');
 INSERT INTO public.permissions (read,write,delete,read_permission,write_permission,delete_permission) VALUES ('1','0','1','0','1','0');
 INSERT INTO public.permissions (read,write,delete,read_permission,write_permission,delete_permission) VALUES ('1','1','1','1','1','1');]]></appended-sql>
-	<position x="28.5" y="357.25"/>
+	<position x="9.75" y="309.75"/>
 	<column name="id" not-null="true">
 		<type name="serial"/>
 	</column>
@@ -467,24 +467,6 @@ INSERT INTO public.permissions (read,write,delete,read_permission,write_permissi
 	</column>
 	<constraint name="permission_id" type="pk-constr" table="public.permissions">
 		<columns names="id" ref-type="src-columns"/>
-	</constraint>
-</table>
-
-<table name="link_groups_permissions">
-	<schema name="public"/>
-	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('1','1');
-INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('2','2');
-INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('3','3');]]></appended-sql>
-	<position x="38.75" y="263"/>
-	<column name="group_id" not-null="true">
-		<type name="integer"/>
-	</column>
-	<column name="permission_id" not-null="true">
-		<type name="integer"/>
-	</column>
-	<constraint name="link_groups_permissions_pk" type="pk-constr" table="public.link_groups_permissions">
-		<columns names="group_id,permission_id" ref-type="src-columns"/>
 	</constraint>
 </table>
 
@@ -838,166 +820,176 @@ INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01
 </textbox>
 
 <textbox name="Cloud Accounts" font-size="9">
-	<position x="1120" y="267.5"/>
+	<position x="1115" y="178.75"/>
 	<comment><![CDATA[Cloud Accounts]]></comment>
 </textbox>
 
 <table name="link_permissions_azr_storage_objects">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="365" y="583.75"/>
-	<column name="permission_id" not-null="true">
+	<position x="372.5" y="586.25"/>
+	<column name="group_id" not-null="true">
 		<type name="integer"/>
 	</column>
-	<column name="azr_storage_object_id" not-null="true">
+	<column name="resource_id" not-null="true">
+		<type name="integer"/>
+	</column>
+	<column name="permission_id">
 		<type name="integer"/>
 	</column>
 	<constraint name="link_permissions_azr_storage_objects_pk" type="pk-constr" table="public.link_permissions_azr_storage_objects">
-		<columns names="permission_id,azr_storage_object_id" ref-type="src-columns"/>
+		<columns names="group_id,resource_id" ref-type="src-columns"/>
 	</constraint>
 </table>
 
 <table name="link_permissions_aws_storages">
 	<schema name="public"/>
 	<role name="root"/>
-	<appended-sql><![CDATA[INSERT INTO public.link_permissions_aws_storages (permission_id,aws_storage_id) VALUES ('1','12');
-INSERT INTO public.link_permissions_aws_storages (permission_id,aws_storage_id) VALUES ('2','1');
-INSERT INTO public.link_permissions_aws_storages (permission_id,aws_storage_id) VALUES ('3','13');]]></appended-sql>
-	<position x="358.75" y="316.25"/>
-	<column name="permission_id" not-null="true">
+	<appended-sql><![CDATA[INSERT INTO public.link_permissions_aws_storages (group_id, resource_id, permission_id) VALUES ('1','12','1');
+INSERT INTO public.link_permissions_aws_storages (group_id, resource_id, permission_id) VALUES ('2','1','1');
+INSERT INTO public.link_permissions_aws_storages (group_id, resource_id, permission_id) VALUES ('3','13','3');]]></appended-sql>
+	<position x="372.5" y="200"/>
+	<column name="group_id" not-null="true">
 		<type name="integer"/>
 	</column>
-	<column name="aws_storage_id" not-null="true">
+	<column name="resource_id" not-null="true">
+		<type name="integer"/>
+	</column>
+	<column name="permission_id">
 		<type name="integer"/>
 	</column>
 	<constraint name="link_permissions_aws_storages_pk" type="pk-constr" table="public.link_permissions_aws_storages">
-		<columns names="permission_id,aws_storage_id" ref-type="src-columns"/>
+		<columns names="group_id,resource_id" ref-type="src-columns"/>
 	</constraint>
 </table>
 
 <table name="link_permissions_aws_storage_containers">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="360" y="368.75"/>
-	<column name="permission_id" not-null="true">
+	<position x="371.25" y="277.5"/>
+	<column name="group_id" not-null="true">
 		<type name="integer"/>
 	</column>
-	<column name="aws_storage_container_id" not-null="true">
+	<column name="resource_id" not-null="true">
+		<type name="integer"/>
+	</column>
+	<column name="permission_id">
 		<type name="integer"/>
 	</column>
 	<constraint name="link_permissions_aws_storage_containers_pk" type="pk-constr" table="public.link_permissions_aws_storage_containers">
-		<columns names="permission_id,aws_storage_container_id" ref-type="src-columns"/>
+		<columns names="group_id,resource_id" ref-type="src-columns"/>
 	</constraint>
 </table>
 
 <table name="link_permissions_aws_storage_objects">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="360" y="421.25"/>
-	<column name="permission_id" not-null="true">
+	<position x="372.5" y="355"/>
+	<column name="group_id" not-null="true">
 		<type name="integer"/>
 	</column>
-	<column name="aws_storage_object_id" not-null="true">
+	<column name="resource_id" not-null="true">
+		<type name="integer"/>
+	</column>
+	<column name="permission_id">
 		<type name="integer"/>
 	</column>
 	<constraint name="link_permissions_aws_storage_objects_pk" type="pk-constr" table="public.link_permissions_aws_storage_objects">
-		<columns names="permission_id,aws_storage_object_id" ref-type="src-columns"/>
+		<columns names="group_id,resource_id" ref-type="src-columns"/>
 	</constraint>
 </table>
 
 <table name="link_permissions_azr_storages">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="362.5" y="472.5"/>
-	<column name="permission_id" not-null="true">
+	<position x="372.5" y="433.75"/>
+	<column name="group_id" not-null="true">
 		<type name="integer"/>
 	</column>
-	<column name="azr_storage_id" not-null="true">
+	<column name="resource_id" not-null="true">
+		<type name="integer"/>
+	</column>
+	<column name="permission_id">
 		<type name="integer"/>
 	</column>
 	<constraint name="link_permissions_azr_storages_pk" type="pk-constr" table="public.link_permissions_azr_storages">
-		<columns names="permission_id,azr_storage_id" ref-type="src-columns"/>
+		<columns names="group_id,resource_id" ref-type="src-columns"/>
 	</constraint>
 </table>
 
 <table name="link_permissions_azr_storage_containers">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="363.75" y="528.75"/>
-	<column name="permission_id" not-null="true">
+	<position x="372.5" y="508.75"/>
+	<column name="group_id" not-null="true">
 		<type name="integer"/>
 	</column>
-	<column name="azr_storage_container_id" not-null="true">
+	<column name="resource_id" not-null="true">
+		<type name="integer"/>
+	</column>
+	<column name="permission_id">
 		<type name="integer"/>
 	</column>
 	<constraint name="link_permissions_azr_storage_containers_pk" type="pk-constr" table="public.link_permissions_azr_storage_containers">
-		<columns names="permission_id,azr_storage_container_id" ref-type="src-columns"/>
+		<columns names="group_id,resource_id" ref-type="src-columns"/>
 	</constraint>
 </table>
 
 <view name="resources">
 	<schema name="public"/>
 	<role name="root"/>
-	<position x="1762.5" y="437.5"/>
+	<position x="1762.5" y="438.75"/>
 	<reference>
-		<expression><![CDATA[SELECT 'aws_storages' AS resource_type, aws_storages.id, aws_storages.name, aws_storages.description, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+		<expression><![CDATA[SELECT 'aws_storages' AS resource_table, 'storage' AS resource_type, aws_storages.id, aws_storages.name, aws_storages.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
 FROM aws_storages
-LEFT JOIN link_permissions_aws_storages ON aws_storages.id = link_permissions_aws_storages.aws_storage_id
-LEFT JOIN permissions ON permissions.id = link_permissions_aws_storages.permission_id
-LEFT JOIN link_groups_permissions ON link_groups_permissions.permission_id = permissions.id
-LEFT JOIN groups ON link_groups_permissions.group_id = groups.id
+LEFT JOIN link_permissions_aws_storages AS l ON aws_storages.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
 UNION ALL
-SELECT 'azr_storages' AS resource_type, azr_storages.id, azr_storages.name, azr_storages.description, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+SELECT 'azr_storages' AS resource_table, 'storage' AS resource_type, azr_storages.id, azr_storages.name, azr_storages.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
 FROM azr_storages
-LEFT JOIN  link_permissions_azr_storages on azr_storages.id = link_permissions_azr_storages.azr_storage_id
-LEFT JOIN  permissions on permissions.id = link_permissions_azr_storages.permission_id
-LEFT JOIN  link_groups_permissions on link_groups_permissions.permission_id = permissions.id
-LEFT JOIN  groups on link_groups_permissions.group_id = groups.id
+LEFT JOIN link_permissions_azr_storages AS l ON azr_storages.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
 UNION ALL
-SELECT 'aws_storage_containers' AS resource_type, aws_storage_containers.id, aws_storage_containers.name, aws_storage_containers.description, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+SELECT 'aws_storage_containers' AS resource_table, 'container' AS resource_type, aws_storage_containers.id, aws_storage_containers.name, aws_storage_containers.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
 FROM aws_storage_containers
-LEFT JOIN link_permissions_aws_storage_containers ON aws_storage_containers.id = link_permissions_aws_storage_containers.aws_storage_container_id
-LEFT JOIN permissions ON permissions.id = link_permissions_aws_storage_containers.permission_id
-LEFT JOIN link_groups_permissions ON link_groups_permissions.permission_id = permissions.id
-LEFT JOIN groups ON link_groups_permissions.group_id = groups.id
+LEFT JOIN link_permissions_aws_storage_containers AS l ON aws_storage_containers.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
 UNION ALL
-SELECT 'azr_storage_containers' AS resource_table, azr_storage_containers.id, azr_storage_containers.name, azr_storage_containers.description, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+SELECT 'azr_storage_containers' AS resource_table, 'container' AS resource_type, azr_storage_containers.id, azr_storage_containers.name, azr_storage_containers.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
 FROM azr_storage_containers
-LEFT JOIN link_permissions_azr_storage_containers ON azr_storage_containers.id = link_permissions_azr_storage_containers.azr_storage_container_id
-LEFT JOIN permissions ON permissions.id = link_permissions_azr_storage_containers.permission_id
-LEFT JOIN link_groups_permissions ON link_groups_permissions.permission_id = permissions.id
-LEFT JOIN groups ON link_groups_permissions.group_id = groups.id
+LEFT JOIN link_permissions_azr_storage_containers AS l ON azr_storage_containers.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
 UNION ALL
-SELECT 'aws_storage_folders' AS resource_table,  aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+SELECT 'aws_storage_objects' AS resource_table, 'folder' AS resource_type,  aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
 FROM aws_storage_objects
-LEFT JOIN link_permissions_aws_storage_objects ON aws_storage_objects.id = link_permissions_aws_storage_objects.aws_storage_object_id
-LEFT JOIN permissions ON permissions.id = link_permissions_aws_storage_objects.permission_id
-LEFT JOIN link_groups_permissions ON link_groups_permissions.permission_id = permissions.id
-LEFT JOIN groups ON link_groups_permissions.group_id = groups.id
+LEFT JOIN link_permissions_aws_storage_objects AS l ON aws_storage_objects.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
 AND aws_storage_objects.type = 'folder'
 UNION ALL
-SELECT'azr_storage_folders' AS resource_table,  azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+SELECT'azr_storage_objects' AS resource_table, 'folder' AS resource_type,  azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
 FROM azr_storage_objects
-LEFT JOIN link_permissions_azr_storage_objects ON azr_storage_objects.id = link_permissions_azr_storage_objects.azr_storage_object_id
-LEFT JOIN permissions ON permissions.id = link_permissions_azr_storage_objects.permission_id
-LEFT JOIN link_groups_permissions ON link_groups_permissions.permission_id = permissions.id
-LEFT JOIN groups ON link_groups_permissions.group_id = groups.id
+LEFT JOIN link_permissions_azr_storage_objects AS l ON azr_storage_objects.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
 AND azr_storage_objects.type = 'folder'
 UNION ALL
-SELECT 'aws_storage_files' AS resource_table, aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+SELECT 'aws_storage_objects' AS resource_table, 'file' AS resource_type, aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
 FROM aws_storage_objects
-LEFT JOIN link_permissions_aws_storage_objects on aws_storage_objects.id = link_permissions_aws_storage_objects.aws_storage_object_id
-LEFT JOIN permissions on permissions.id = link_permissions_aws_storage_objects.permission_id
-LEFT JOIN link_groups_permissions on link_groups_permissions.permission_id = permissions.id
-LEFT JOIN groups on link_groups_permissions.group_id = groups.id
+LEFT JOIN link_permissions_aws_storage_objects AS l ON aws_storage_objects.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
 AND  aws_storage_objects.type != 'folder'
 UNION ALL
-SELECT 'azr_storage_files' AS resource_table,  azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+SELECT 'azr_storage_objects' AS resource_table, 'file' AS resource_type,  azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
 FROM azr_storage_objects
-LEFT JOIN link_permissions_azr_storage_objects on azr_storage_objects.id = link_permissions_azr_storage_objects.azr_storage_object_id
-LEFT JOIN permissions on permissions.id = link_permissions_azr_storage_objects.permission_id
-LEFT JOIN link_groups_permissions on link_groups_permissions.permission_id = permissions.id
-LEFT JOIN groups on link_groups_permissions.group_id = groups.id
+LEFT JOIN link_permissions_azr_storage_objects AS l ON azr_storage_objects.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
 AND azr_storage_objects.type != 'folder']]></expression>
 	</reference>
 </view>
@@ -1050,18 +1042,6 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
-<constraint name="group_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.groups" table="public.link_groups_permissions">
-	<columns names="group_id" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
-
-<constraint name="permission_id" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.permissions" table="public.link_groups_permissions">
-	<columns names="permission_id" ref-type="src-columns"/>
-	<columns names="id" ref-type="dst-columns"/>
-</constraint>
-
 <constraint name="aws_storage_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storages" table="public.aws_storage_containers">
 	<columns names="storage_id" ref-type="src-columns"/>
@@ -1100,7 +1080,13 @@ AND azr_storage_objects.type != 'folder']]></expression>
 
 <constraint name="azr_storage_objects_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.azr_storage_objects" table="public.link_permissions_azr_storage_objects">
-	<columns names="azr_storage_object_id" ref-type="src-columns"/>
+	<columns names="resource_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="group_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.groups" table="public.link_permissions_azr_storage_objects">
+	<columns names="group_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
@@ -1112,7 +1098,13 @@ AND azr_storage_objects.type != 'folder']]></expression>
 
 <constraint name="aws_storage_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storages" table="public.link_permissions_aws_storages">
-	<columns names="aws_storage_id" ref-type="src-columns"/>
+	<columns names="resource_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="group_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.groups" table="public.link_permissions_aws_storages">
+	<columns names="group_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
@@ -1124,7 +1116,13 @@ AND azr_storage_objects.type != 'folder']]></expression>
 
 <constraint name="aws_storage_container_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storage_containers" table="public.link_permissions_aws_storage_containers">
-	<columns names="aws_storage_container_id" ref-type="src-columns"/>
+	<columns names="resource_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="group_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.groups" table="public.link_permissions_aws_storage_containers">
+	<columns names="group_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
@@ -1136,7 +1134,13 @@ AND azr_storage_objects.type != 'folder']]></expression>
 
 <constraint name="aws_storage_objects_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.aws_storage_objects" table="public.link_permissions_aws_storage_objects">
-	<columns names="aws_storage_object_id" ref-type="src-columns"/>
+	<columns names="resource_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="group_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.groups" table="public.link_permissions_aws_storage_objects">
+	<columns names="group_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
@@ -1148,7 +1152,13 @@ AND azr_storage_objects.type != 'folder']]></expression>
 
 <constraint name="azr_storage_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.azr_storages" table="public.link_permissions_azr_storages">
-	<columns names="azr_storage_id" ref-type="src-columns"/>
+	<columns names="resource_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="group_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.groups" table="public.link_permissions_azr_storages">
+	<columns names="group_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
@@ -1160,7 +1170,13 @@ AND azr_storage_objects.type != 'folder']]></expression>
 
 <constraint name="azr_storage_containers_id" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.azr_storage_containers" table="public.link_permissions_azr_storage_containers">
-	<columns names="azr_storage_container_id" ref-type="src-columns"/>
+	<columns names="resource_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="group_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.groups" table="public.link_permissions_azr_storage_containers">
+	<columns names="group_id" ref-type="src-columns"/>
 	<columns names="id" ref-type="dst-columns"/>
 </constraint>
 
@@ -1188,8 +1204,7 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.groups"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="245.45" y="169.6"/>
-	<position x="479.25" y="169.6"/>
+		<position x="9.25" y="90.85"/>
 	</line>
 </relationship>
 
@@ -1198,31 +1213,12 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.users"
 	 src-required="false" dst-required="false"/>
 
-<relationship name="rel_link_groups_permissions_groups" type="relfk"
-	 src-table="public.link_groups_permissions"
-	 dst-table="public.groups"
-	 src-required="false" dst-required="false">
-	<line>
-		<position x="284.747" y="269.975"/>
-	<position x="479.25" y="269.975"/>
-	</line>
-</relationship>
-
-<relationship name="rel_link_groups_permissions_permissions" type="relfk"
-	 src-table="public.link_groups_permissions"
-	 dst-table="public.permissions"
-	 src-required="false" dst-required="false">
-	<line>
-		<position x="10.25" y="305.6"/>
-	</line>
-</relationship>
-
 <relationship name="rel_aws_storage_containers_aws_storage" type="relfk"
 	 src-table="public.aws_storage_containers"
 	 dst-table="public.aws_storages"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="1021.97" y="1064.6"/>
+		<position x="1020.72" y="1064.6"/>
 	</line>
 </relationship>
 
@@ -1289,8 +1285,7 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.users"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="766.936" y="460.35"/>
-	<position x="766.936" y="78.1"/>
+		<position x="810" y="78.1"/>
 	</line>
 </relationship>
 
@@ -1308,7 +1303,7 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.permissions"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="280.341" y="344.85"/>
+		<position x="353" y="338.35"/>
 	</line>
 </relationship>
 
@@ -1317,7 +1312,7 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.aws_storages"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="749.5" y="358.85"/>
+		<position x="749.5" y="242.6"/>
 	</line>
 </relationship>
 
@@ -1326,7 +1321,7 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.permissions"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="280.341" y="397.35"/>
+		<position x="351.75" y="338.35"/>
 	</line>
 </relationship>
 
@@ -1335,7 +1330,7 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.permissions"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="280.341" y="449.85"/>
+		<position x="353" y="338.35"/>
 	</line>
 </relationship>
 
@@ -1344,7 +1339,7 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.permissions"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="280.341" y="501.1"/>
+		<position x="353" y="338.35"/>
 	</line>
 </relationship>
 
@@ -1353,7 +1348,7 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.permissions"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="280.341" y="557.35"/>
+		<position x="353" y="338.35"/>
 	</line>
 </relationship>
 
@@ -1362,7 +1357,7 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.permissions"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="280.341" y="612.35"/>
+		<position x="353" y="338.35"/>
 	</line>
 </relationship>
 
@@ -1371,7 +1366,8 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.aws_storage_containers"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="1023.42" y="411.35"/>
+		<position x="720.3" y="559.35"/>
+	<position x="1023.42" y="559.35"/>
 	</line>
 </relationship>
 
@@ -1380,7 +1376,8 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.aws_storage_objects"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="14.75" y="463.85"/>
+		<position x="353" y="652.85"/>
+	<position x="14.75" y="652.85"/>
 	</line>
 </relationship>
 
@@ -1389,7 +1386,7 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.azr_storages"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="1362.75" y="515.1"/>
+		<position x="1362.75" y="490.35"/>
 	</line>
 </relationship>
 
@@ -1398,7 +1395,7 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 dst-table="public.azr_storage_containers"
 	 src-required="false" dst-required="false">
 	<line>
-		<position x="1349" y="571.35"/>
+		<position x="1349" y="551.35"/>
 	</line>
 </relationship>
 
@@ -1408,6 +1405,60 @@ AND azr_storage_objects.type != 'folder']]></expression>
 	 src-required="false" dst-required="false">
 	<line>
 		<position x="1355" y="626.35"/>
+	</line>
+</relationship>
+
+<relationship name="rel_link_permissions_aws_storages_groups" type="relfk"
+	 src-table="public.link_permissions_aws_storages"
+	 dst-table="public.groups"
+	 src-required="false" dst-required="false">
+	<line>
+		<position x="353" y="198.35"/>
+	</line>
+</relationship>
+
+<relationship name="rel_link_permissions_aws_storage_containers_groups" type="relfk"
+	 src-table="public.link_permissions_aws_storage_containers"
+	 dst-table="public.groups"
+	 src-required="false" dst-required="false">
+	<line>
+		<position x="351.75" y="198.35"/>
+	</line>
+</relationship>
+
+<relationship name="rel_link_permissions_aws_storage_objects_groups" type="relfk"
+	 src-table="public.link_permissions_aws_storage_objects"
+	 dst-table="public.groups"
+	 src-required="false" dst-required="false">
+	<line>
+		<position x="353" y="198.35"/>
+	</line>
+</relationship>
+
+<relationship name="rel_link_permissions_azr_storages_groups" type="relfk"
+	 src-table="public.link_permissions_azr_storages"
+	 dst-table="public.groups"
+	 src-required="false" dst-required="false">
+	<line>
+		<position x="353" y="198.35"/>
+	</line>
+</relationship>
+
+<relationship name="rel_link_permissions_azr_storage_containers_groups" type="relfk"
+	 src-table="public.link_permissions_azr_storage_containers"
+	 dst-table="public.groups"
+	 src-required="false" dst-required="false">
+	<line>
+		<position x="353" y="198.35"/>
+	</line>
+</relationship>
+
+<relationship name="rel_link_permissions_azr_storage_objects_groups" type="relfk"
+	 src-table="public.link_permissions_azr_storage_objects"
+	 dst-table="public.groups"
+	 src-required="false" dst-required="false">
+	<line>
+		<position x="353" y="198.35"/>
 	</line>
 </relationship>
 

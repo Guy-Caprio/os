@@ -22,9 +22,9 @@ CREATE ROLE root WITH
 
 -- Database creation must be done outside an multicommand file.
 -- These commands were put in this file only for convenience.
--- -- object: testing | type: DATABASE --
--- -- DROP DATABASE IF EXISTS testing;
--- CREATE DATABASE testing
+-- -- object: cloudhook | type: DATABASE --
+-- -- DROP DATABASE IF EXISTS cloudhook;
+-- CREATE DATABASE cloudhook
 -- 	ENCODING = 'UTF8'
 -- 	OWNER = root
 -- ;
@@ -320,24 +320,6 @@ INSERT INTO public.permissions (read,write,delete,read_permission,write_permissi
 INSERT INTO public.permissions (read,write,delete,read_permission,write_permission,delete_permission) VALUES ('1','1','1','1','1','1');
 -- ddl-end --
 
--- object: public.link_groups_permissions | type: TABLE --
--- DROP TABLE IF EXISTS public.link_groups_permissions CASCADE;
-CREATE TABLE public.link_groups_permissions(
-	group_id integer NOT NULL,
-	permission_id integer NOT NULL,
-	CONSTRAINT link_groups_permissions_pk PRIMARY KEY (group_id,permission_id)
-
-);
--- ddl-end --
-ALTER TABLE public.link_groups_permissions OWNER TO root;
--- ddl-end --
-
--- Appended SQL commands --
-INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('1','1');
-INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('2','2');
-INSERT INTO public.link_groups_permissions (group_id,permission_id) VALUES ('3','3');
--- ddl-end --
-
 -- object: public.accounts | type: VIEW --
 -- DROP VIEW IF EXISTS public.accounts CASCADE;
 CREATE VIEW public.accounts
@@ -608,52 +590,26 @@ INSERT INTO public.register (key,value) VALUES ('aws_iam_api_version','2010-05-0
 INSERT INTO public.register (key,value) VALUES ('aws_s3_api_version','2006-03-01');
 -- ddl-end --
 
--- object: public.resources | type: VIEW --
--- DROP VIEW IF EXISTS public.resources CASCADE;
-CREATE VIEW public.resources
-AS 
+-- object: public.link_permissions_azr_storage_objects | type: TABLE --
+-- DROP TABLE IF EXISTS public.link_permissions_azr_storage_objects CASCADE;
+CREATE TABLE public.link_permissions_azr_storage_objects(
+	group_id integer NOT NULL,
+	resource_id integer NOT NULL,
+	permission_id integer,
+	CONSTRAINT link_permissions_azr_storage_objects_pk PRIMARY KEY (group_id,resource_id)
 
-SELECT id, name, description, 'aws_storages' AS resource_table
-FROM aws_storages
-UNION ALL
-SELECT id, name, description, 'azr_storages' AS resource_table
-FROM azr_storages
-UNION ALL
-SELECT id, name, description, 'aws_storage_containers' AS resource_table
-FROM aws_storage_containers
-UNION ALL
-SELECT id, name, description, 'azr_storage_containers' AS resource_table
-FROM azr_storage_containers
-UNION ALL
-SELECT id, name, description, 'aws_storage_folders' AS resource_table
-FROM aws_storage_objects
-WHERE
-type = 'folder'
-UNION ALL
-SELECT id, name, description, 'aws_storage_files' AS resource_table
-FROM aws_storage_objects
-WHERE
-type != 'folder'
-UNION ALL
-SELECT id, name, description, 'azr_storage_folders' AS resource_table
-FROM azr_storage_objects
-WHERE
-type = 'folder'
-UNION ALL
-SELECT id, name, description, 'azr_storage_files' AS resource_table
-FROM azr_storage_objects
-WHERE
-type != 'folder';
+);
 -- ddl-end --
-ALTER VIEW public.resources OWNER TO root;
+ALTER TABLE public.link_permissions_azr_storage_objects OWNER TO root;
 -- ddl-end --
 
 -- object: public.link_permissions_aws_storages | type: TABLE --
 -- DROP TABLE IF EXISTS public.link_permissions_aws_storages CASCADE;
 CREATE TABLE public.link_permissions_aws_storages(
-	permission_id integer NOT NULL,
-	aws_storage_id integer NOT NULL,
-	CONSTRAINT link_permissions_aws_storages_pk PRIMARY KEY (permission_id,aws_storage_id)
+	group_id integer NOT NULL,
+	resource_id integer NOT NULL,
+	permission_id integer,
+	CONSTRAINT link_permissions_aws_storages_pk PRIMARY KEY (group_id,resource_id)
 
 );
 -- ddl-end --
@@ -661,17 +617,18 @@ ALTER TABLE public.link_permissions_aws_storages OWNER TO root;
 -- ddl-end --
 
 -- Appended SQL commands --
-INSERT INTO public.link_permissions_aws_storages (permission_id,aws_storage_id) VALUES ('1','12');
-INSERT INTO public.link_permissions_aws_storages (permission_id,aws_storage_id) VALUES ('2','1');
-INSERT INTO public.link_permissions_aws_storages (permission_id,aws_storage_id) VALUES ('3','13');
+INSERT INTO public.link_permissions_aws_storages (group_id, resource_id, permission_id) VALUES ('1','12','1');
+INSERT INTO public.link_permissions_aws_storages (group_id, resource_id, permission_id) VALUES ('2','1','1');
+INSERT INTO public.link_permissions_aws_storages (group_id, resource_id, permission_id) VALUES ('3','13','3');
 -- ddl-end --
 
 -- object: public.link_permissions_aws_storage_containers | type: TABLE --
 -- DROP TABLE IF EXISTS public.link_permissions_aws_storage_containers CASCADE;
 CREATE TABLE public.link_permissions_aws_storage_containers(
-	permission_id integer NOT NULL,
-	aws_storage_container_id integer NOT NULL,
-	CONSTRAINT link_permissions_aws_storage_containers_pk PRIMARY KEY (permission_id,aws_storage_container_id)
+	group_id integer NOT NULL,
+	resource_id integer NOT NULL,
+	permission_id integer,
+	CONSTRAINT link_permissions_aws_storage_containers_pk PRIMARY KEY (group_id,resource_id)
 
 );
 -- ddl-end --
@@ -681,9 +638,10 @@ ALTER TABLE public.link_permissions_aws_storage_containers OWNER TO root;
 -- object: public.link_permissions_aws_storage_objects | type: TABLE --
 -- DROP TABLE IF EXISTS public.link_permissions_aws_storage_objects CASCADE;
 CREATE TABLE public.link_permissions_aws_storage_objects(
-	permission_id integer NOT NULL,
-	aws_storage_object_id integer NOT NULL,
-	CONSTRAINT link_permissions_aws_storage_objects_pk PRIMARY KEY (permission_id,aws_storage_object_id)
+	group_id integer NOT NULL,
+	resource_id integer NOT NULL,
+	permission_id integer,
+	CONSTRAINT link_permissions_aws_storage_objects_pk PRIMARY KEY (group_id,resource_id)
 
 );
 -- ddl-end --
@@ -693,9 +651,10 @@ ALTER TABLE public.link_permissions_aws_storage_objects OWNER TO root;
 -- object: public.link_permissions_azr_storages | type: TABLE --
 -- DROP TABLE IF EXISTS public.link_permissions_azr_storages CASCADE;
 CREATE TABLE public.link_permissions_azr_storages(
-	permission_id integer NOT NULL,
-	azr_storage_id integer NOT NULL,
-	CONSTRAINT link_permissions_azr_storages_pk PRIMARY KEY (permission_id,azr_storage_id)
+	group_id integer NOT NULL,
+	resource_id integer NOT NULL,
+	permission_id integer,
+	CONSTRAINT link_permissions_azr_storages_pk PRIMARY KEY (group_id,resource_id)
 
 );
 -- ddl-end --
@@ -705,25 +664,74 @@ ALTER TABLE public.link_permissions_azr_storages OWNER TO root;
 -- object: public.link_permissions_azr_storage_containers | type: TABLE --
 -- DROP TABLE IF EXISTS public.link_permissions_azr_storage_containers CASCADE;
 CREATE TABLE public.link_permissions_azr_storage_containers(
-	permission_id integer NOT NULL,
-	azr_storage_container_id integer NOT NULL,
-	CONSTRAINT link_permissions_azr_storage_containers_pk PRIMARY KEY (permission_id,azr_storage_container_id)
+	group_id integer NOT NULL,
+	resource_id integer NOT NULL,
+	permission_id integer,
+	CONSTRAINT link_permissions_azr_storage_containers_pk PRIMARY KEY (group_id,resource_id)
 
 );
 -- ddl-end --
 ALTER TABLE public.link_permissions_azr_storage_containers OWNER TO root;
 -- ddl-end --
 
--- object: public.link_permissions_azr_storage_objects | type: TABLE --
--- DROP TABLE IF EXISTS public.link_permissions_azr_storage_objects CASCADE;
-CREATE TABLE public.link_permissions_azr_storage_objects(
-	permission_id integer NOT NULL,
-	azr_storage_object_id integer NOT NULL,
-	CONSTRAINT link_permissions_azr_storage_objects_pk PRIMARY KEY (permission_id,azr_storage_object_id)
+-- object: public.resources | type: VIEW --
+-- DROP VIEW IF EXISTS public.resources CASCADE;
+CREATE VIEW public.resources
+AS 
 
-);
+SELECT 'aws_storages' AS resource_table, 'storage' AS resource_type, aws_storages.id, aws_storages.name, aws_storages.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+FROM aws_storages
+LEFT JOIN link_permissions_aws_storages AS l ON aws_storages.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
+UNION ALL
+SELECT 'azr_storages' AS resource_table, 'storage' AS resource_type, azr_storages.id, azr_storages.name, azr_storages.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+FROM azr_storages
+LEFT JOIN link_permissions_azr_storages AS l ON azr_storages.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
+UNION ALL
+SELECT 'aws_storage_containers' AS resource_table, 'container' AS resource_type, aws_storage_containers.id, aws_storage_containers.name, aws_storage_containers.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+FROM aws_storage_containers
+LEFT JOIN link_permissions_aws_storage_containers AS l ON aws_storage_containers.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
+UNION ALL
+SELECT 'azr_storage_containers' AS resource_table, 'container' AS resource_type, azr_storage_containers.id, azr_storage_containers.name, azr_storage_containers.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+FROM azr_storage_containers
+LEFT JOIN link_permissions_azr_storage_containers AS l ON azr_storage_containers.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
+UNION ALL
+SELECT 'aws_storage_objects' AS resource_table, 'folder' AS resource_type,  aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+FROM aws_storage_objects
+LEFT JOIN link_permissions_aws_storage_objects AS l ON aws_storage_objects.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
+AND aws_storage_objects.type = 'folder'
+UNION ALL
+SELECT'azr_storage_objects' AS resource_table, 'folder' AS resource_type,  azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+FROM azr_storage_objects
+LEFT JOIN link_permissions_azr_storage_objects AS l ON azr_storage_objects.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
+AND azr_storage_objects.type = 'folder'
+UNION ALL
+SELECT 'aws_storage_objects' AS resource_table, 'file' AS resource_type, aws_storage_objects.id, aws_storage_objects.name, aws_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+FROM aws_storage_objects
+LEFT JOIN link_permissions_aws_storage_objects AS l ON aws_storage_objects.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
+AND  aws_storage_objects.type != 'folder'
+UNION ALL
+SELECT 'azr_storage_objects' AS resource_table, 'file' AS resource_type,  azr_storage_objects.id, azr_storage_objects.name, azr_storage_objects.description, permissions.id AS permission_id, permissions.read, permissions.write, permissions.delete, permissions.read_permission, permissions.write_permission, permissions.delete_permission, groups.id AS group_id
+FROM azr_storage_objects
+LEFT JOIN link_permissions_azr_storage_objects AS l ON azr_storage_objects.id = l.resource_id
+LEFT JOIN permissions ON permissions.id = l.permission_id
+LEFT JOIN groups ON l.group_id = groups.id
+AND azr_storage_objects.type != 'folder';
 -- ddl-end --
-ALTER TABLE public.link_permissions_azr_storage_objects OWNER TO root;
+ALTER VIEW public.resources OWNER TO root;
 -- ddl-end --
 
 -- object: aws_storage_container_id | type: CONSTRAINT --
@@ -782,20 +790,6 @@ REFERENCES public.users (id) MATCH FULL
 ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ddl-end --
 
--- object: group_id | type: CONSTRAINT --
--- ALTER TABLE public.link_groups_permissions DROP CONSTRAINT IF EXISTS group_id CASCADE;
-ALTER TABLE public.link_groups_permissions ADD CONSTRAINT group_id FOREIGN KEY (group_id)
-REFERENCES public.groups (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
--- ddl-end --
-
--- object: permission_id | type: CONSTRAINT --
--- ALTER TABLE public.link_groups_permissions DROP CONSTRAINT IF EXISTS permission_id CASCADE;
-ALTER TABLE public.link_groups_permissions ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
-REFERENCES public.permissions (id) MATCH FULL
-ON DELETE CASCADE ON UPDATE NO ACTION;
--- ddl-end --
-
 -- object: aws_storage_id | type: CONSTRAINT --
 -- ALTER TABLE public.aws_storage_containers DROP CONSTRAINT IF EXISTS aws_storage_id CASCADE;
 ALTER TABLE public.aws_storage_containers ADD CONSTRAINT aws_storage_id FOREIGN KEY (storage_id)
@@ -832,6 +826,27 @@ ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
 -- object: permission_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_azr_storage_objects DROP CONSTRAINT IF EXISTS permission_id CASCADE;
+ALTER TABLE public.link_permissions_azr_storage_objects ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
+REFERENCES public.permissions (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: azr_storage_objects_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_azr_storage_objects DROP CONSTRAINT IF EXISTS azr_storage_objects_id CASCADE;
+ALTER TABLE public.link_permissions_azr_storage_objects ADD CONSTRAINT azr_storage_objects_id FOREIGN KEY (resource_id)
+REFERENCES public.azr_storage_objects (id) MATCH FULL
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: group_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_azr_storage_objects DROP CONSTRAINT IF EXISTS group_id CASCADE;
+ALTER TABLE public.link_permissions_azr_storage_objects ADD CONSTRAINT group_id FOREIGN KEY (group_id)
+REFERENCES public.groups (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: permission_id | type: CONSTRAINT --
 -- ALTER TABLE public.link_permissions_aws_storages DROP CONSTRAINT IF EXISTS permission_id CASCADE;
 ALTER TABLE public.link_permissions_aws_storages ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
 REFERENCES public.permissions (id) MATCH FULL
@@ -840,8 +855,15 @@ ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- object: aws_storage_id | type: CONSTRAINT --
 -- ALTER TABLE public.link_permissions_aws_storages DROP CONSTRAINT IF EXISTS aws_storage_id CASCADE;
-ALTER TABLE public.link_permissions_aws_storages ADD CONSTRAINT aws_storage_id FOREIGN KEY (aws_storage_id)
+ALTER TABLE public.link_permissions_aws_storages ADD CONSTRAINT aws_storage_id FOREIGN KEY (resource_id)
 REFERENCES public.aws_storages (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: group_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_aws_storages DROP CONSTRAINT IF EXISTS group_id CASCADE;
+ALTER TABLE public.link_permissions_aws_storages ADD CONSTRAINT group_id FOREIGN KEY (group_id)
+REFERENCES public.groups (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
@@ -852,6 +874,20 @@ REFERENCES public.permissions (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
+-- object: aws_storage_container_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_aws_storage_containers DROP CONSTRAINT IF EXISTS aws_storage_container_id CASCADE;
+ALTER TABLE public.link_permissions_aws_storage_containers ADD CONSTRAINT aws_storage_container_id FOREIGN KEY (resource_id)
+REFERENCES public.aws_storage_containers (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: group_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_aws_storage_containers DROP CONSTRAINT IF EXISTS group_id CASCADE;
+ALTER TABLE public.link_permissions_aws_storage_containers ADD CONSTRAINT group_id FOREIGN KEY (group_id)
+REFERENCES public.groups (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
 -- object: permission_id | type: CONSTRAINT --
 -- ALTER TABLE public.link_permissions_aws_storage_objects DROP CONSTRAINT IF EXISTS permission_id CASCADE;
 ALTER TABLE public.link_permissions_aws_storage_objects ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
@@ -859,11 +895,39 @@ REFERENCES public.permissions (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
+-- object: aws_storage_objects_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_aws_storage_objects DROP CONSTRAINT IF EXISTS aws_storage_objects_id CASCADE;
+ALTER TABLE public.link_permissions_aws_storage_objects ADD CONSTRAINT aws_storage_objects_id FOREIGN KEY (resource_id)
+REFERENCES public.aws_storage_objects (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: group_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_aws_storage_objects DROP CONSTRAINT IF EXISTS group_id CASCADE;
+ALTER TABLE public.link_permissions_aws_storage_objects ADD CONSTRAINT group_id FOREIGN KEY (group_id)
+REFERENCES public.groups (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
 -- object: permission_id | type: CONSTRAINT --
 -- ALTER TABLE public.link_permissions_azr_storages DROP CONSTRAINT IF EXISTS permission_id CASCADE;
 ALTER TABLE public.link_permissions_azr_storages ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
 REFERENCES public.permissions (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: azr_storage_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_azr_storages DROP CONSTRAINT IF EXISTS azr_storage_id CASCADE;
+ALTER TABLE public.link_permissions_azr_storages ADD CONSTRAINT azr_storage_id FOREIGN KEY (resource_id)
+REFERENCES public.azr_storages (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: group_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_azr_storages DROP CONSTRAINT IF EXISTS group_id CASCADE;
+ALTER TABLE public.link_permissions_azr_storages ADD CONSTRAINT group_id FOREIGN KEY (group_id)
+REFERENCES public.groups (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
 -- object: permission_id | type: CONSTRAINT --
@@ -873,11 +937,18 @@ REFERENCES public.permissions (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
--- object: permission_id | type: CONSTRAINT --
--- ALTER TABLE public.link_permissions_azr_storage_objects DROP CONSTRAINT IF EXISTS permission_id CASCADE;
-ALTER TABLE public.link_permissions_azr_storage_objects ADD CONSTRAINT permission_id FOREIGN KEY (permission_id)
-REFERENCES public.permissions (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
+-- object: azr_storage_containers_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_azr_storage_containers DROP CONSTRAINT IF EXISTS azr_storage_containers_id CASCADE;
+ALTER TABLE public.link_permissions_azr_storage_containers ADD CONSTRAINT azr_storage_containers_id FOREIGN KEY (resource_id)
+REFERENCES public.azr_storage_containers (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: group_id | type: CONSTRAINT --
+-- ALTER TABLE public.link_permissions_azr_storage_containers DROP CONSTRAINT IF EXISTS group_id CASCADE;
+ALTER TABLE public.link_permissions_azr_storage_containers ADD CONSTRAINT group_id FOREIGN KEY (group_id)
+REFERENCES public.groups (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
 
